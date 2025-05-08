@@ -2,21 +2,40 @@ name: Pull Request
 
 on:
   pull_request:
-    branches: [main]
-    types: [labeled, opened, synchronize, reopened]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
+  check-commits:
+    name: Check Commitizen
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Pyhon
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install Commitizen
+        run: pip install commitizen
+      - name: Check Commits
+        run: |
+          cz check --rev-range origin/main..HEAD
+
   build-theme:
     name: Build Theme
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-      - run: |
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+      - name: Build
+        run: |
           cd theme
           npm install
           npm run build-keycloak-theme
@@ -25,11 +44,15 @@ jobs:
     name: Build Extension
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
+          distribution: "temurin"
           java-version: "17"
-      - run: |
+      - name: Build & Test
+        run: |
           cd extension
           make
           make test

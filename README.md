@@ -62,7 +62,6 @@ To test the `OpenLDAP` integration you'll have to use the `extension` package.
 
 ## TODO
 
-- [ ] Move to GitHub
 - [ ] Dependabot
 - [ ] CI/CD
 
