@@ -1,6 +1,6 @@
 {
     "name": "keycloak-app-passwords",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "description": "Keycloak App Passwords Theme",
     "repository": {
         "type": "git",
