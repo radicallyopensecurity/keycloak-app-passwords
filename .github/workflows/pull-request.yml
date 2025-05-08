@@ -16,7 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-      - run: |
+      - name: Build
+        run: |
           cd theme
           npm install
           npm run build-keycloak-theme
@@ -28,8 +29,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
+          distribution: "temurin"
           java-version: "17"
-      - run: |
+      - name: Build
+        run: |
           cd extension
           make
           make test
