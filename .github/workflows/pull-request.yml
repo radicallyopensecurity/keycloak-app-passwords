@@ -1,0 +1,65 @@
+name: Pull Request
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-commits:
+    name: Check Commitizen
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Pyhon
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install Commitizen
+        run: ./.internal/ci/install-cz.sh
+      - name: Check Commits
+        run: ./.internal/ci/version-check.sh
+
+  build-theme:
+    name: Build Theme
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Cache NPM
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Setup Node
+        uses: actions/setup-node@v4
+      - name: Build
+        run: ./.internal/ci/build-theme.sh
+
+  build-extension:
+    name: Build Extension
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+      - name: Build & Test
+        run: ./.internal/ci/build-extension.sh
