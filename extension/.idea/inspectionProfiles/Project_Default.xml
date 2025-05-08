@@ -1,0 +1,38 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="VulnerableLibrariesLocal" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="isIgnoringEnabled" value="true" />
+      <option name="ignoredModules">
+        <list>
+          <option value="keycloak-app-passwords" />
+          <option value="keycloak-app-passwords" />
+          <option value="keycloak-app-passwords" />
+          <option value="keycloak-app-passwords" />
+          <option value="keycloak-app-passwords" />
+          <option value="keycloak-app-passwords" />
+        </list>
+      </option>
+      <option name="ignoredPackages">
+        <list>
+          <option value="io.netty:netty-handler:4.1.111.Final" />
+          <option value="org.keycloak:keycloak-common:26.0.5" />
+          <option value="com.google.protobuf:protobuf-java:3.25.1" />
+          <option value="io.netty:netty-common:4.1.111.Final" />
+          <option value="commons-codec:commons-codec:1.11" />
+          <option value="io.netty:netty-common:4.1.117.Final" />
+        </list>
+      </option>
+      <option name="ignoredReasons">
+        <list>
+          <option value="Not exploitable" />
+          <option value="Not exploitable" />
+          <option value="Not exploitable" />
+          <option value="Not exploitable" />
+          <option value="Not exploitable" />
+          <option value="Not exploitable" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

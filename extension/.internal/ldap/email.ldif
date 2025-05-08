@@ -1,0 +1,9 @@
+dn: cn=email,cn=schema,cn=config
+cn: email
+objectclass: olcSchemaConfig
+olcattributetypes: {0}(1.3.6.1.4.1.4203.666.1.200 NAME 'emailPassword'
+ DESC 'secondary password for email' EQUALITY caseIgnoreMa
+ tch SUBSTR caseIgnoreSubstringsMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{1
+ 024})
+olcobjectclasses: {0}(1.3.6.1.4.1.4203.666.1.100 NAME 'emailUser' DESC 'Po
+ stfix mail user class' SUP top AUXILIARY MAY(emailPassword))
