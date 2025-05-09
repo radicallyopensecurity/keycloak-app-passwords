@@ -1,8 +1,10 @@
 # keycloak-app-passwords
 
-Enable generated app passwords in `keycloak`.
-
 [![Release](https://github.com/radicallyopensecurity/keycloak-app-passwords/actions/workflows/push-main.yml/badge.svg)](https://github.com/radicallyopensecurity/keycloak-app-passwords/actions/workflows/push-main.yml)
+
+Generate app specific passwords in `Keycloak`.
+
+![app-passwords](https://github.com/user-attachments/assets/57c0253b-8485-41c3-ae24-2c48f552c68b)
 
 ## Dependencies
 
@@ -17,7 +19,7 @@ Enable generated app passwords in `keycloak`.
 
 This extension comes in 2 packages:
 
-- [Java Extension](./extension/README.md): A `keycloak` extension that adds API routes to manage app passwords.
+- [Java Extension](./extension/README.md): A `Keycloak` extension that adds API routes to manage app passwords.
 - [Keycloakify Theme](./theme/README.md): A `keycloakify` based theme that allows users to manage their app passwords.
 
 ## Usage
@@ -26,7 +28,7 @@ For running the packages, see the `README` docs for each package.
 
 To run the extension and theme together, you can use or base your deployment off the [`docker-compose`](./extension/docker-compose.yml) file in the `extension` folder.
 
-> WARNING: The `docker-compose` file is extremely insecure and shoud only be used in development.
+> WARNING: The `docker-compose` file is extremely insecure and should only be used in development.
 
 The important parts in the `docker-compose` file are the volume mounts:
 
@@ -37,11 +39,11 @@ volumes:
   - ./theme/dist/theme/keycloak-app-passwords:/opt/keycloak/themes/keycloak-app-passwords
 ```
 
-Placing the built extension, its config and the theme in the `/opt/keycloak/{providers,themes}` will load the extension and the theme. After starting `keycloak`, you should then set the `theme` in `realm settings` to `keycloak-app-passwords`.
+Placing the built extension, its config and the theme in the `/opt/keycloak/{providers,themes}` will load the extension and the theme. After starting `Keycloak`, you should then set the `theme` in `realm settings` to `keycloak-app-passwords`.
 
-You can also place the theme `jar` file in `/opt/keycloak/providers` to make the theme available in `keycloak`.
+You can also place the theme `jar` file in `/opt/keycloak/providers` to make the theme available in `Keycloak`.
 
-If you're already using a custom theme, then the only way to add the theme extensions from this repo. Is to copy and paste the files from the [`theme`](./theme/) folder into your own theme.
+If you're already using a custom theme, then the only way to add the theme extensions from this repo is to copy and paste the files from the [`theme`](./theme/) folder into your own theme.
 
 `Keycloak` and `keycloakify` do not offer methods to make this any easier. Anything clever to track this repo and merge with your custom theme will have to come from your side.
 
@@ -53,12 +55,12 @@ See [`extension`](./extension/README.md) on how to run the extension in developm
 
 In both setups:
 
-- The theme and extension are loaded into `keycloak`.
+- The theme and extension are loaded into `Keycloak`.
 - You can attach a debugger to the keycloak extension on port `8787`.
 
 It's most convenient to work in the specific package that you're working on.
 
-In the `extension` setup you won't have live reload when edditing the theme. In the `theme` setup, you'll have slower rebuilds when you change something in the extension.
+In the `extension` setup you won't have live reload when editing the theme. In the `theme` setup, you'll have slower rebuilds when you change something in the extension.
 
 To test the `OpenLDAP` integration you'll have to use the `extension` package.
 
