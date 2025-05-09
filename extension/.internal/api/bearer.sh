@@ -42,6 +42,7 @@ curl -X DELETE http://localhost:8080/realms/myrealm/app-password \
   -d '{"name": "emailPassword"}'
 # nocontent
 
+# Check app password
 curl -X POST http://localhost:8080/realms/myrealm/app-password/check \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
