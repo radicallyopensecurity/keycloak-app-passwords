@@ -9,10 +9,29 @@ on:
     - cron: "43 6 * * 6"
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      analyze: ${{ steps.check.outputs.analyze }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Check Commit
+        id: check
+        run: |
+          msg=$(git log -1 --pretty=%B)
+          echo "Commit message: $msg"
+          if [[ "$msg" == bump:* ]]; then
+            echo "analyze=false" >> $GITHUB_OUTPUT
+          else
+            echo "analyze=true" >> $GITHUB_OUTPUT
+          fi
+
   analyze:
     name: Analyze (${{ matrix.language }})
     runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
-    if: github.actor != 'github-actions[bot]'
+    needs: check
+    if: needs.check.outputs.analyze == 'true'
     permissions:
       # required for all workflows
       security-events: write
