@@ -8,6 +8,7 @@ import java.util.List;
 public class AppPasswordConfig {
     public List<AppPasswordConfigAttribute> attributes;
     public Integer length;
+    public List<String> groups;
 
     public static AppPasswordConfig withDefaults() {
         AppPasswordConfig config = new AppPasswordConfig();
@@ -15,6 +16,7 @@ public class AppPasswordConfig {
                 new AppPasswordConfigAttribute("emailPassword", "emailPasswordCreated")
         );
         config.length = 32;
+        config.groups = null;
         return config;
     }
 }

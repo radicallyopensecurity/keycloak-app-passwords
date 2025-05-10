@@ -61,8 +61,21 @@ const deleteAppPassword = async (
     return;
 };
 
+const isEnabled = async (
+    signal: AbortSignal,
+    context: KeycloakContext<BaseEnvironment>
+) => {
+    const path = `/realms/${context.environment.realm}/app-password/enabled`;
+    const url = new URL(joinPath(context.environment.serverBaseUrl, path));
+
+    const response = await request(path, context, { signal }, new URL(url));
+
+    return parseResponse<{ enabled: boolean }>(response);
+};
+
 export const appPasswordClient = {
     list: listAppPasswords,
     generate: generateAppPassword,
-    delete: deleteAppPassword
+    delete: deleteAppPassword,
+    isEnabled
 };

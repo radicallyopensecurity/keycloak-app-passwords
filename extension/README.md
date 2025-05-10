@@ -17,6 +17,7 @@ This extension adds 4 new routes to each realm:
 - `POST /realms/myrealm/app-passwords`: Generate a new secure app password
 - `DELETE /realms/myrealm/app-passwords`: Delete an app password
 - `POST /realms/myrealm/app-passwords/check`: Check if a password matches the value stored in the user attribute.
+- `GET /realms/myrealm/app-passwords/enabled`: Check if app passwords feature is enabled for this user.
 
 The [accompanying theme](../theme) allows users to manage their own app password from the `Account UI`.
 
@@ -32,13 +33,21 @@ make
 
 Place the built `jar` file in `/opt/keycloak/providers`. The extension will now load on start.
 
-Optionally copy [`keycloak-app-passwords.config.json`](./keycloak-app-passwords.config.json) and modify the settings.
+Optionally copy [`keycloak-app-passwords.config.json`](keycloak-app-passwords.config.json) and modify the settings.
 
 > Note: Modifying the Keycloak data model is unsupported according to the [Server Development Guide](https://www.keycloak.org/docs/latest/server_development/#_extensions_jpa). Therefore, we've opted to use a `json` config file.
 
 You can now call the REST API using either `bearer` or `session` authentication:
 
 See the scripts for [`bearer`](.internal/api/bearer.sh) and [`session`](.internal/api/session.sh) for how to call the API.
+
+By default, app passwords is enabled for all users. You can control this by setting the `groups` key in the `config.json`:
+
+```text
+"groups": null                 // default - enabled for all
+"groups": []                   // disabled for all
+"groups": ["group1", "group2"] // enabled for users in group1 or group2   
+```
 
 ### LDAP
 
@@ -86,18 +95,21 @@ make build-dev
 
 First time starting, you can use the import script to import realm settings needed for initial development.
 
-```sh
-make import
-# or
-./.internal/scripts/import.sh
-```
-
-If you want to use the `LDAP` connection:
+Initialize LDAP:
 
 ```sh
 docker compose up openldap
 docker exec -it openldap /bin/sh
 sh /tmp/ldapscripts/add-schema.sh
+```
+
+```sh
+# make sure openldap is running
+docker compose up openldap 
+
+make import
+# or
+./.internal/scripts/import.sh
 ```
 
 After that you can run the app via `Docker`:
@@ -106,12 +118,13 @@ After that you can run the app via `Docker`:
 make dev
 ```
 
-If you want to use the `LDAP` connection, go to `Realm settings->User federation->ldap` and enable the connection.
-
 If you make changes to the realm and want to keep this for future runs, or to commit them, use the export script:
 
 ```sh
-docker compose down # make sure docker is not running
+# make sure keycloak is not running
+docker compose down keycloak
+# and make sure openldap is running
+docker compose up openldap 
 
 make export
 # or
