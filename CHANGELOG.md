@@ -1,3 +1,9 @@
+## 1.1.1 (2025-05-10)
+
+### Fix
+
+- **i18n**: add missing translations
+
 ## 1.1.0 (2025-05-10)
 
 ### Feat
