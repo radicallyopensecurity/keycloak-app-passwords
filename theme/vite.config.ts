@@ -28,9 +28,9 @@ export default defineConfig(() => {
                         "-v",
                         `${jarPath}:/opt/keycloak/providers/${jarFile}`,
                         "-v",
-                        `${configPath}:/opt/keycloak/providers/${configFile}`,
-                        "-e",
-                        javaOpts
+                        `${configPath}:/opt/keycloak/providers/${configFile}`
+                        // "-e",
+                        // javaOpts
                         // "-e",
                         // "KC_LOG_LEVEL=debug"
                     ]
