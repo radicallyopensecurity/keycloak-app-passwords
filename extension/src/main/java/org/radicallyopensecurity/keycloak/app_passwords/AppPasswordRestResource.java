@@ -4,15 +4,18 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.password4j.Argon2Function;
 import com.password4j.Password;
 import com.password4j.types.Argon2;
+import io.quarkus.security.UnauthorizedException;
 import jakarta.ws.rs.*;
 import org.jboss.logging.Logger;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.cors.Cors;
@@ -75,6 +78,11 @@ public class AppPasswordRestResource {
     public Response list() {
         Auth auth = AppPasswordUtils.validateAuth(session);
         UserModel user = auth.getUser();
+        Stream<String> userGroups = user.getGroupsStream().map(GroupModel::getName);
+
+        if (!AppPasswordUtils.hasValidGroup(config, userGroups)) {
+            throw new UnauthorizedException();
+        }
 
         List<AppPasswordListResponseDto> result = config.attributes.stream()
                 .map(item -> {
@@ -103,6 +111,13 @@ public class AppPasswordRestResource {
         Auth auth = AppPasswordUtils.validateAuth(session);
         AppPasswordConfigAttribute attribute = AppPasswordUtils.validateAttribute(config, request.name);
 
+        UserModel user = auth.getUser();
+        Stream<String> userGroups = user.getGroupsStream().map(GroupModel::getName);
+
+        if (!AppPasswordUtils.hasValidGroup(config, userGroups)) {
+            throw new UnauthorizedException();
+        }
+
         String plainText = AppPasswordUtils.generateSecurePassword(config.length);
         String hashed = Password
                 .hash(plainText)
@@ -112,7 +127,6 @@ public class AppPasswordRestResource {
 
         String now = OffsetDateTime.now(ZoneOffset.UTC).toString();
 
-        UserModel user = auth.getUser();
         user.setSingleAttribute(attribute.password, hashed);
         user.setSingleAttribute(attribute.created, now);
 
@@ -141,8 +155,13 @@ public class AppPasswordRestResource {
     public Response delete(AppPasswordRequestDto request) {
         Auth auth = AppPasswordUtils.validateAuth(session);
         AppPasswordConfigAttribute attribute = AppPasswordUtils.validateAttribute(config, request.name);
-
         UserModel user = auth.getUser();
+        Stream<String> userGroups = user.getGroupsStream().map(GroupModel::getName);
+
+        if (!AppPasswordUtils.hasValidGroup(config, userGroups)) {
+            throw new UnauthorizedException();
+        }
+
         user.removeAttribute(attribute.password);
         user.removeAttribute(attribute.created);
 
@@ -180,8 +199,12 @@ public class AppPasswordRestResource {
     public Response check(AppPasswordCheckPasswordRequestDto request) {
         Auth auth = AppPasswordUtils.validateAuth(session);
         AppPasswordUtils.validateAttribute(config, request.name);
-
         UserModel user = auth.getUser();
+        Stream<String> userGroups = user.getGroupsStream().map(GroupModel::getName);
+
+        if (!AppPasswordUtils.hasValidGroup(config, userGroups)) {
+            throw new UnauthorizedException();
+        }
 
         String hash = user.getFirstAttribute(request.name);
         boolean verified = Password.check(request.password, hash).with(hashFunction);
@@ -192,6 +215,44 @@ public class AppPasswordRestResource {
                 .builder()
                 .allowedOrigins(auth.getToken())
                 .allowedMethods("POST")
+                .add(Response.ok(result));
+    }
+
+    /**
+     * Preflight is enabled
+     * @return Empty
+     */
+    @OPTIONS
+    @Path("/enabled")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response optionsEnabled() {
+        return Cors
+                .builder()
+                .preflight()
+                .allowedMethods("GET")
+                .auth()
+                .add(Response.ok());
+    }
+
+    /**
+     * Check whether app passwords are enabled for user
+     * @return Whether app passwords are enabled for user
+     */
+    @GET
+    @Path("/enabled")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response enabled() {
+        Auth auth = AppPasswordUtils.validateAuth(session);
+        UserModel user = auth.getUser();
+        Stream<String> userGroups = user.getGroupsStream().map(GroupModel::getName);
+
+        boolean isEnabled = AppPasswordUtils.hasValidGroup(config, userGroups);
+        AppPasswordEnabledResponseDto result = new AppPasswordEnabledResponseDto(isEnabled);
+
+        return Cors
+                .builder()
+                .allowedOrigins(auth.getToken())
+                .allowedMethods("GET")
                 .add(Response.ok(result));
     }
 }

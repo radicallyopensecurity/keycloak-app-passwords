@@ -45,11 +45,5 @@ export const content: MenuItem[] = [
         label: "oid4vci",
         path: "oid4vci",
         isVisible: "isOid4VciEnabled"
-    },
-    {
-        label: "appPasswords",
-        path: "app-passwords"
-        // TODO: Add checker
-        // isVisible: "isAppPasswordsEnabled"
     }
 ];

@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class AppPasswordUtils {
     private static final PasswordGenerator Generator = new PasswordGenerator();
@@ -35,7 +36,7 @@ public class AppPasswordUtils {
      */
     static AppPasswordConfig createConfig(String path) {
         Path configPath = Paths.get(path);
-        AppPasswordConfig defaults = AppPasswordConfig.withDefaults();
+        AppPasswordConfig config = AppPasswordConfig.withDefaults();
 
         if (Files.exists(configPath)) {
             try {
@@ -43,18 +44,22 @@ public class AppPasswordUtils {
                 AppPasswordConfig overrides = mapper.readValue(configPath.toFile(), AppPasswordConfig.class);
 
                 if (overrides.attributes != null) {
-                    defaults.attributes = overrides.attributes;
+                    config.attributes = overrides.attributes;
                 }
 
                 if (overrides.length != null) {
-                    defaults.length = overrides.length;
+                    config.length = overrides.length;
+                }
+
+                if (overrides.groups != null) {
+                    config.groups = overrides.groups;
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Failed to load config from " + configPath, e);
             }
         }
 
-        return defaults;
+        return config;
     }
 
     /**
@@ -154,5 +159,25 @@ public class AppPasswordUtils {
                 .findFirst()
                 .orElse(null);
         return attribute;
+    }
+
+    /**
+     * App Passwords is enabled for user
+     */
+    public static boolean hasValidGroup(AppPasswordConfig config, Stream<String> userGroups) {
+        List<String> allowedGroups = config.groups;
+
+        if (config.groups == null) {
+            // Enabled for everyone
+            return true;
+        }
+
+        if (config.groups.isEmpty()) {
+            // Disabled for everyone
+            return false;
+        }
+
+        // user must have group membership
+        return userGroups.anyMatch(allowedGroups::contains);
     }
 }

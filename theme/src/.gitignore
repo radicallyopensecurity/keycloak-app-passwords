@@ -3,6 +3,7 @@
 # === Owned files start ===
 # account/routes.tsx
 # account/assets/content.ts
+# account/content/fetchContent.ts
 # === Owned files end =====
 
 # === @keycloakify/keycloak-account-ui v260200.0.0 ===
@@ -34,7 +35,6 @@
 /account/account-security/LinkedAccountsToolbar.tsx
 /account/account-security/DeviceActivity.tsx
 /account/account-security/SigningIn.tsx
-/account/content/fetchContent.ts
 /account/i18n/index.ts
 /account/resources/PermissionRequest.tsx
 /account/resources/Resources.tsx

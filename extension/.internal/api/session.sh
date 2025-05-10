@@ -45,3 +45,10 @@ curl -X POST http://localhost:8080/realms/myrealm/app-password/check \
 # {"success":false}
 # or
 # {"success":true}
+
+# Check app passwords is enabled
+curl -X GET http://localhost:8080/realms/myrealm/app-password/enabled \
+  -H "Cookie: KEYCLOAK_IDENTITY=$IDENTITY; KEYCLOAK_SESSION=$SESSION"
+# {"enabled":false}
+# or
+# {"enabled":true}
