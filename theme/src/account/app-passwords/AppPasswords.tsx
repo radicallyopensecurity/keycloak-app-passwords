@@ -231,7 +231,7 @@ export const AppPasswords: React.FC = () => {
                 actions={[
                     <Button
                         key="confirm"
-                        variant="warning"
+                        variant="danger"
                         data-testid="confirm"
                         onClick={() => {
                             generateAppPassword(regenerateModal as string);
