@@ -4,7 +4,7 @@
 
 Generate app specific passwords in `Keycloak`.
 
-![app-passwords](https://github.com/user-attachments/assets/57c0253b-8485-41c3-ae24-2c48f552c68b)
+![app-passwords](https://github.com/user-attachments/assets/7c87da49-17fc-414c-baab-2ffc0c81d117)
 
 ## Dependencies
 
