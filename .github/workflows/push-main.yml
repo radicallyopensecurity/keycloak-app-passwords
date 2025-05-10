@@ -112,4 +112,4 @@ jobs:
           NEXT_VERSION: ${{ needs.version.outputs.version }}
         run: ./.internal/ci/version-bump.sh "$NEXT_VERSION"
       - name: Push
-        run: git push && git push --tags
+        run: git push && git push --tags && exit 0
