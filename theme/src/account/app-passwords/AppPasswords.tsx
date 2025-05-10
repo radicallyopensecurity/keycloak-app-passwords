@@ -5,7 +5,6 @@ import {
     Button,
     ButtonVariant,
     capitalize,
-    ClipboardCopy,
     DataList,
     DataListAction,
     DataListCell,
@@ -24,6 +23,7 @@ import { Environment } from "../environment";
 import { usePromise } from "../utils/usePromise";
 import { TFunction } from "i18next";
 import { formatDate } from "../utils/formatDate";
+import { Password } from "./components/Password";
 
 const appPasswordRowCells = (
     item: AppPasswordListRepresentation,
@@ -211,12 +211,9 @@ export const AppPasswords: React.FC = () => {
                                             <Text as="p">
                                                 {t("appPasswordGeneratedDescription")}
                                             </Text>
-                                            <ClipboardCopy
-                                                isReadOnly
-                                                variant="inline-compact"
-                                            >
-                                                {generatedPassword.password}
-                                            </ClipboardCopy>
+                                            <Password
+                                                value={generatedPassword.password}
+                                            />
                                         </TextContent>
                                     </Alert>
                                 )}
