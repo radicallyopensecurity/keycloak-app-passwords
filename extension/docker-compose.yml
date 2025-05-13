@@ -23,9 +23,10 @@ services:
       KC_SPI_THEME_CACHE_TEMPLATES: "false"
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_EXT_APP_PASSWORDS_CONFIG: "/usr/local/src/keycloak/current/keycloak-app-passwords.config.json"
     volumes:
       - ./target/keycloak-app-passwords-DEV.jar:/opt/keycloak/providers/keycloak-app-passwords-DEV.jar
-      - ./target/keycloak-app-passwords.config.json:/opt/keycloak/providers/keycloak-app-passwords.config.json
+      - ./target/keycloak-app-passwords.config.json:/usr/local/src/keycloak/current/keycloak-app-passwords.config.json
       - ${THEME_PATH:-./.internal/data}:/opt/keycloak/themes/keycloak-app-passwords
       - ./.internal/data:/opt/keycloak/data
       - ./.internal/realms:/opt/keycloak/data/import

@@ -31,9 +31,11 @@ Build:
 make
 ```
 
-Place the built `jar` file in `/opt/keycloak/providers`. The extension will now load on start.
+Place the built `jar` file in `/opt/keycloak/providers` or your custom path. The extension will now load on start.
 
 Optionally copy [`keycloak-app-passwords.config.json`](keycloak-app-passwords.config.json) and modify the settings.
+
+You can place the `keycloak-app-passwords.config.json` either in `/opt/keycloak/providers` or use the environment variable `KC_EXT_APP_PASSWORDS_CONFIG` to set the path somewhere else.
 
 > Note: Modifying the Keycloak data model is unsupported according to the [Server Development Guide](https://www.keycloak.org/docs/latest/server_development/#_extensions_jpa). Therefore, we've opted to use a `json` config file.
 
