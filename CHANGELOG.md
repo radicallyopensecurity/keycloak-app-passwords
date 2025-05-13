@@ -1,3 +1,9 @@
+## 1.1.3 (2025-05-13)
+
+### Fix
+
+- **extension**: use env variable to specify config path
+
 ## 1.1.2 (2025-05-10)
 
 ### Fix
