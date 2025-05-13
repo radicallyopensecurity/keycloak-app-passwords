@@ -7,10 +7,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: push-main
-  cancel-in-progress: true
-
 jobs:
   version:
     name: Version
