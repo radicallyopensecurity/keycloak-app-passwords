@@ -20,7 +20,11 @@ public class AppPasswordRestResourceProviderFactory implements RealmResourceProv
 
     @Override
     public void init(Config.Scope scope) {
-        this.config = AppPasswordUtils.createConfig("/opt/keycloak/providers/keycloak-app-passwords.config.json");
+        String configPath = System.getenv("KC_EXT_APP_PASSWORDS_CONFIG");
+        if (configPath == null || configPath.isEmpty()) {
+            configPath = "/opt/keycloak/providers/keycloak-app-passwords.config.json";
+        }
+        this.config = AppPasswordUtils.createConfig(configPath);
     }
 
     @Override
