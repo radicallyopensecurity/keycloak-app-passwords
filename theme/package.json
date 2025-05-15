@@ -12,7 +12,8 @@
         "postinstall": "keycloakify sync-extensions",
         "dev": "vite",
         "build": "tsc && vite build",
-        "build-keycloak-theme": "npm run build && keycloakify build",
+        "build-keycloak-theme": "npm run build && keycloakify build && npm run css-workaround",
+        "css-workaround": "./.internal/patch-theme.sh",
         "storybook": "storybook dev -p 6006",
         "format": "prettier . --write"
     },
