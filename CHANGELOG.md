@@ -1,3 +1,9 @@
+## 1.1.4 (2025-05-15)
+
+### Fix
+
+- **theme**: add css workaroud so we can extend the theme styles
+
 ## 1.1.3 (2025-05-13)
 
 ### Fix
