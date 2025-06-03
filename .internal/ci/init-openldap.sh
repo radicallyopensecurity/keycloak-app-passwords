@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-id
-whoami
+cd extension
 
 docker compose up -d openldap
 
@@ -15,8 +14,4 @@ for i in {1..30}; do
     sleep 1
 done
 
-docker compose run --rm \
-  --entrypoint "sh -c ' \
-    rm -rf /opt/keycloak/data/{h2,transaction-logs} && \
-    /opt/keycloak/bin/kc.sh import --dir /opt/keycloak/data/import'" \
-  keycloak
+docker exec openldap sh -c 'cd /tmp/ldapscripts && sh add-schema.sh'

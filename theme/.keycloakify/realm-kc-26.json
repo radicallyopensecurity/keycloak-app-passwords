@@ -728,7 +728,7 @@
             "consentRequired": false,
             "standardFlowEnabled": true,
             "implicitFlowEnabled": false,
-            "directAccessGrantsEnabled": false,
+            "directAccessGrantsEnabled": true,
             "serviceAccountsEnabled": false,
             "publicClient": true,
             "frontchannelLogout": false,
@@ -741,7 +741,8 @@
                 "oauth2.device.authorization.grant.enabled": "false",
                 "display.on.consent.screen": "false",
                 "pkce.code.challenge.method": "S256",
-                "backchannel.logout.revoke.offline.tokens": "false"
+                "backchannel.logout.revoke.offline.tokens": "false",
+                "standard.token.exchange.enabled": "false"
             },
             "authenticationFlowBindingOverrides": {},
             "fullScopeAllowed": false,
@@ -1762,14 +1763,14 @@
                 "subComponents": {},
                 "config": {
                     "allowed-protocol-mapper-types": [
-                        "saml-user-attribute-mapper",
-                        "oidc-full-name-mapper",
                         "oidc-usermodel-property-mapper",
                         "oidc-usermodel-attribute-mapper",
-                        "oidc-address-mapper",
+                        "oidc-sha256-pairwise-sub-mapper",
                         "saml-user-property-mapper",
+                        "oidc-full-name-mapper",
+                        "saml-user-attribute-mapper",
                         "saml-role-list-mapper",
-                        "oidc-sha256-pairwise-sub-mapper"
+                        "oidc-address-mapper"
                     ]
                 }
             },
@@ -1799,14 +1800,14 @@
                 "subComponents": {},
                 "config": {
                     "allowed-protocol-mapper-types": [
-                        "oidc-sha256-pairwise-sub-mapper",
-                        "saml-role-list-mapper",
-                        "oidc-usermodel-property-mapper",
+                        "oidc-full-name-mapper",
                         "oidc-usermodel-attribute-mapper",
+                        "saml-user-attribute-mapper",
+                        "oidc-usermodel-property-mapper",
+                        "saml-role-list-mapper",
                         "saml-user-property-mapper",
                         "oidc-address-mapper",
-                        "saml-user-attribute-mapper",
-                        "oidc-full-name-mapper"
+                        "oidc-sha256-pairwise-sub-mapper"
                     ]
                 }
             },
@@ -2573,7 +2574,7 @@
         "parRequestUriLifespan": "60",
         "clientSessionMaxLifespan": "0"
     },
-    "keycloakVersion": "26.2.4",
+    "keycloakVersion": "26.2.5",
     "userManagedAccessAllowed": false,
     "organizationsEnabled": false,
     "clientProfiles": {

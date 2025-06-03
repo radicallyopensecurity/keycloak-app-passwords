@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 cd extension
-make
+make build-dev
