@@ -6,28 +6,28 @@ services:
     container_name: keycloak
     command: start-dev
     ports:
-      - "8080:8080"
-      - "8787:8787"
+      - '8080:8080'
+      - '8787:8787'
     environment:
       JAVA_OPTS: >-
         -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8787
       KC_DB: dev-file
-      KC_HTTP_ENABLED: "true"
+      KC_HTTP_ENABLED: 'true'
       # DO NOT USE THIS IN PRODUCTION
       # INSECURE SETTINGS
-      KC_BOOTSTRAP_ADMIN_USERNAME: "admin"
-      KC_BOOTSTRAP_ADMIN_PASSWORD: "admin"
-      KC_LOG_LEVEL: "debug"
-      KC_SPI_THEME_STATIC_MAX_AGE: "-1"
-      KC_SPI_THEME_CACHE_THEMES: "false"
-      KC_SPI_THEME_CACHE_TEMPLATES: "false"
-      KC_HOSTNAME_STRICT: "false"
-      KC_HOSTNAME_STRICT_HTTPS: "false"
-      KC_EXT_APP_PASSWORDS_CONFIG: "/usr/local/src/keycloak/current/keycloak-app-passwords.config.json"
+      KC_BOOTSTRAP_ADMIN_USERNAME: 'admin'
+      KC_BOOTSTRAP_ADMIN_PASSWORD: 'admin'
+      KC_LOG_LEVEL: 'info'
+      KC_SPI_THEME_STATIC_MAX_AGE: '-1'
+      KC_SPI_THEME_CACHE_THEMES: 'false'
+      KC_SPI_THEME_CACHE_TEMPLATES: 'false'
+      KC_HOSTNAME_STRICT: 'false'
+      KC_HOSTNAME_STRICT_HTTPS: 'false'
+      KC_EXT_APP_PASSWORDS_CONFIG: '/usr/local/src/keycloak/current/keycloak-app-passwords.config.json'
     volumes:
-      - ./target/keycloak-app-passwords-DEV.jar:/opt/keycloak/providers/keycloak-app-passwords-DEV.jar
-      - ./target/keycloak-app-passwords.config.json:/usr/local/src/keycloak/current/keycloak-app-passwords.config.json
-      - ${THEME_PATH:-./.internal/data}:/opt/keycloak/themes/keycloak-app-passwords
+      - ${THEME_PATH:-./.internal/data}:/opt/keycloak/providers/keycloak-app-passwords-theme.jar
+      - ${EXTENSION_PATH:-./target/keycloak-app-passwords-DEV.jar}:/opt/keycloak/providers/keycloak-app-passwords-extension.jar
+      - ${CONFIG_PATH:-./target/keycloak-app-passwords.config.json}:/usr/local/src/keycloak/current/keycloak-app-passwords.config.json
       - ./.internal/data:/opt/keycloak/data
       - ./.internal/realms:/opt/keycloak/data/import
     networks:
@@ -37,8 +37,8 @@ services:
     image: bitnami/openldap:2.6.9
     container_name: openldap
     ports:
-      - "1389:1389"
-      - "1636:1636"
+      - '1389:1389'
+      - '1636:1636'
     environment:
       - LDAP_ADMIN_USERNAME=admin
       - LDAP_ADMIN_PASSWORD=admin

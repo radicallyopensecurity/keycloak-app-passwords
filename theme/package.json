@@ -1,5 +1,5 @@
 {
-    "name": "keycloak-app-passwords",
+    "name": "keycloak-app-passwords-theme",
     "version": "1.1.6",
     "description": "Keycloak App Passwords Theme",
     "repository": {
@@ -17,7 +17,11 @@
         "format": "prettier . --write"
     },
     "license": "MIT",
-    "keywords": [],
+    "keywords": [
+        "keycloak",
+        "extension",
+        "keycloak-extension"
+    ],
     "dependencies": {
         "keycloakify": "11.8.28",
         "react": "18.3.1",

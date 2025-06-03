@@ -187,6 +187,7 @@ export const AppPasswords: React.FC = () => {
                             {!!generatedPassword &&
                                 generatedPassword.name === item.name && (
                                     <Alert
+                                        date-testid="app-passwords-alert"
                                         isInline
                                         title={t("appPasswordGeneratedTitle", {
                                             name: t(

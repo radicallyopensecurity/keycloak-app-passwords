@@ -51,7 +51,11 @@ export const Password: React.FC<PasswordProps> = ({ value }) => {
             }}
             columnGap={{ default: "columnGapSm" }}
         >
-            <FlexItem as="span" className="pf-v5-u-font-family-monospace">
+            <FlexItem
+                as="span"
+                className="pf-v5-u-font-family-monospace"
+                data-testid="app-passwords-value"
+            >
                 {password}
             </FlexItem>
             <Flex columnGap={{ default: "columnGapSm" }}>
@@ -63,6 +67,7 @@ export const Password: React.FC<PasswordProps> = ({ value }) => {
                     entryDelay={300}
                 >
                     <Button
+                        data-testid="app-passwords-reveal"
                         ref={revealRef}
                         variant="plain"
                         style={{ padding: 0 }}
@@ -85,6 +90,7 @@ export const Password: React.FC<PasswordProps> = ({ value }) => {
                         variant="plain"
                         style={{ padding: 0 }}
                         ref={copyRef}
+                        data-testid="app-passwords-copy"
                         onClick={() => {
                             copyToClipboard(value);
                             setCopied(true);
