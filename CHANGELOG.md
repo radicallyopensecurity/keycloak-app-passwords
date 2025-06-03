@@ -1,3 +1,10 @@
+## 1.1.6 (2025-06-03)
+
+### Fix
+
+- **theme**: allow logo to be overridden by child theme
+- **theme**: child css loads last
+
 ## 1.1.5 (2025-06-03)
 
 ### Fix

@@ -7,7 +7,7 @@
 
     <groupId>org.radicallyopensecurity</groupId>
     <artifactId>keycloak-app-passwords</artifactId>
-    <version>1.1.5</version>
+    <version>1.1.6</version>
 
     <properties>
         <keycloak.version>26.2.4</keycloak.version>
