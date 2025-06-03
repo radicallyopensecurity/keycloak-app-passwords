@@ -48,7 +48,7 @@ By default, app passwords is enabled for all users. You can control this by sett
 ```text
 "groups": null                 // default - enabled for all
 "groups": []                   // disabled for all
-"groups": ["group1", "group2"] // enabled for users in group1 or group2   
+"groups": ["group1", "group2"] // enabled for users in group1 or group2
 ```
 
 ### LDAP
@@ -102,12 +102,13 @@ Initialize LDAP:
 ```sh
 docker compose up openldap
 docker exec -it openldap /bin/sh
-sh /tmp/ldapscripts/add-schema.sh
+cd /tmp/ldapscripts
+sh add-schema.sh
 ```
 
 ```sh
 # make sure openldap is running
-docker compose up openldap 
+docker compose up openldap
 
 make import
 # or
@@ -126,7 +127,7 @@ If you make changes to the realm and want to keep this for future runs, or to co
 # make sure keycloak is not running
 docker compose down keycloak
 # and make sure openldap is running
-docker compose up openldap 
+docker compose up openldap
 
 make export
 # or
