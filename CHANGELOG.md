@@ -1,3 +1,9 @@
+## 1.1.7 (2025-06-04)
+
+### Fix
+
+- **extension**: log events and fix exception return types
+
 ## 1.1.6 (2025-06-03)
 
 ### Fix
