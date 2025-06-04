@@ -9,13 +9,16 @@ import java.util.stream.Stream;
 import com.password4j.Argon2Function;
 import com.password4j.Password;
 import com.password4j.types.Argon2;
-import io.quarkus.security.UnauthorizedException;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.ext.Provider;
 import org.jboss.logging.Logger;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.keycloak.events.EventBuilder;
+import org.keycloak.events.EventType;
 import org.keycloak.models.GroupModel;
+import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.cors.Cors;
@@ -24,7 +27,7 @@ import org.radicallyopensecurity.keycloak.app_passwords.config.AppPasswordConfig
 import org.radicallyopensecurity.keycloak.app_passwords.config.AppPasswordConfigAttribute;
 import org.radicallyopensecurity.keycloak.app_passwords.dtos.*;
 
-@jakarta.ws.rs.ext.Provider
+@Provider
 public class AppPasswordRestResource {
     private static final Logger log = Logger.getLogger(AppPasswordRestResource.class);
     private final KeycloakSession session;
@@ -41,10 +44,11 @@ public class AppPasswordRestResource {
     /**
      * Custom REST API to manage app passwords. Can be used to validate login in places where you want a password
      * separate from the users credentials.
-     *
+     * <p>
      * The OPTIONS and CORS settings should be set in the reverse proxy for correct function.
+     *
      * @param session Current session
-     * @param config Runtime config
+     * @param config  Runtime config
      */
     public AppPasswordRestResource(KeycloakSession session, AppPasswordConfig config) {
         this.session = session;
@@ -54,6 +58,7 @@ public class AppPasswordRestResource {
     /**
      * Should allow POST, GET, DELETE and any CORS requirements.
      * Those should be set in a proxy
+     *
      * @return Empty
      */
     @OPTIONS
@@ -70,6 +75,7 @@ public class AppPasswordRestResource {
 
     /**
      * Get a list of all app passwords for a user
+     *
      * @return List of app passwords
      */
     @GET
@@ -81,7 +87,15 @@ public class AppPasswordRestResource {
         Stream<String> userGroups = user.getGroupsStream().map(GroupModel::getName);
 
         if (!AppPasswordUtils.hasValidGroup(config, userGroups)) {
-            throw new UnauthorizedException();
+            KeycloakContext context = session.getContext();
+            new EventBuilder(session.getContext().getRealm(), session)
+                    .event(EventType.CUSTOM_REQUIRED_ACTION)
+                    .detail("Endpoint", "List App Passwords")
+                    .user(user.getId())
+                    .ipAddress(context.getConnection().getRemoteAddr())
+                    .client(auth.getClient())
+                    .error("Unauthorized");
+            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
         }
 
         List<AppPasswordListResponseDto> result = config.attributes.stream()
@@ -100,6 +114,7 @@ public class AppPasswordRestResource {
 
     /**
      * Generate or re-generate an app password for a user
+     *
      * @param request Current request
      * @return Plain text app password
      */
@@ -114,8 +129,17 @@ public class AppPasswordRestResource {
         UserModel user = auth.getUser();
         Stream<String> userGroups = user.getGroupsStream().map(GroupModel::getName);
 
+        KeycloakContext context = session.getContext();
+        EventBuilder event = new EventBuilder(context.getRealm(), session)
+                .event(EventType.UPDATE_PROFILE)
+                .ipAddress(context.getConnection().getRemoteAddr())
+                .client(auth.getClient())
+                .user(user.getId());
+
         if (!AppPasswordUtils.hasValidGroup(config, userGroups)) {
-            throw new UnauthorizedException();
+            event.detail(attribute.password, "SECRET")
+                    .detail(attribute.created, "EMPTY").error("Unauthorized");
+            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
         }
 
         String plainText = AppPasswordUtils.generateSecurePassword(config.length);
@@ -136,6 +160,8 @@ public class AppPasswordRestResource {
                 now
         );
 
+        event.detail(attribute.password, "SECRET")
+                .detail(attribute.created, now).success();
         return Cors
                 .builder()
                 .allowedOrigins(auth.getToken())
@@ -146,6 +172,7 @@ public class AppPasswordRestResource {
     /**
      * Delete app password for a user
      * Removes the password itself and the created value
+     *
      * @param request Current request
      * @return Empty
      */
@@ -156,15 +183,24 @@ public class AppPasswordRestResource {
         Auth auth = AppPasswordUtils.validateAuth(session);
         AppPasswordConfigAttribute attribute = AppPasswordUtils.validateAttribute(config, request.name);
         UserModel user = auth.getUser();
+
+        KeycloakContext context = session.getContext();
+        EventBuilder event = new EventBuilder(session.getContext().getRealm(), session).event(EventType.UPDATE_PROFILE)
+                .user(user.getId())
+                .ipAddress(context.getConnection().getRemoteAddr())
+                .client(auth.getClient());
+
         Stream<String> userGroups = user.getGroupsStream().map(GroupModel::getName);
 
         if (!AppPasswordUtils.hasValidGroup(config, userGroups)) {
-            throw new UnauthorizedException();
+            event.detail(attribute.password, "UNKNOWN")
+                    .detail(attribute.created, "UNKNOWN").error("Unauthorized");
+            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
+
         }
 
-        user.removeAttribute(attribute.password);
-        user.removeAttribute(attribute.created);
-
+        event.detail(attribute.password, "DELETED")
+                .detail(attribute.created, "DELETED").success();
         return Cors
                 .builder()
                 .allowedOrigins(auth.getToken())
@@ -174,6 +210,7 @@ public class AppPasswordRestResource {
 
     /**
      * Preflight check password
+     *
      * @return Empty
      */
     @OPTIONS
@@ -190,6 +227,7 @@ public class AppPasswordRestResource {
 
     /**
      * Check if app password is correct
+     *
      * @param request Current request
      * @return Empty
      */
@@ -202,8 +240,18 @@ public class AppPasswordRestResource {
         UserModel user = auth.getUser();
         Stream<String> userGroups = user.getGroupsStream().map(GroupModel::getName);
 
+        KeycloakContext context = session.getContext();
+        EventBuilder event = new EventBuilder(session.getContext().getRealm(), session)
+                .event(EventType.CUSTOM_REQUIRED_ACTION)
+                .detail("Endpoint", "Check App Password")
+                .detail("Attribute", request.name)
+                .user(user.getId())
+                .ipAddress(context.getConnection().getRemoteAddr())
+                .client(auth.getClient());
+
         if (!AppPasswordUtils.hasValidGroup(config, userGroups)) {
-            throw new UnauthorizedException();
+            event.error("Unauthorized");
+            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
         }
 
         String hash = user.getFirstAttribute(request.name);
@@ -211,6 +259,7 @@ public class AppPasswordRestResource {
 
         AppPasswordCheckPasswordResponseDto result = new AppPasswordCheckPasswordResponseDto(verified);
 
+        event.detail("Verified", String.valueOf(verified)).success();
         return Cors
                 .builder()
                 .allowedOrigins(auth.getToken())
@@ -220,6 +269,7 @@ public class AppPasswordRestResource {
 
     /**
      * Preflight is enabled
+     *
      * @return Empty
      */
     @OPTIONS
@@ -236,6 +286,7 @@ public class AppPasswordRestResource {
 
     /**
      * Check whether app passwords are enabled for user
+     *
      * @return Whether app passwords are enabled for user
      */
     @GET
