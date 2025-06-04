@@ -1,8 +1,9 @@
 package org.radicallyopensecurity.keycloak.app_passwords;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.keycloak.models.*;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.Auth;
@@ -78,7 +79,7 @@ public class AppPasswordUtils {
      * Parse request and extract user
      * @param session Current session
      * @return User making the request
-     * @throws NotAuthorizedException If unauthorized
+     * @throws WebApplicationException If unauthorized
      */
     static Auth validateAuth(KeycloakSession session) {
         boolean hasCookie = false;
@@ -100,7 +101,7 @@ public class AppPasswordUtils {
         }
 
         if (authResult == null) {
-            throw new NotAuthorizedException("User not authenticated");
+            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
         }
 
         RealmModel realm = session.getContext().getRealm();
@@ -114,7 +115,10 @@ public class AppPasswordUtils {
                 hasCookie);
 
         if (auth == null) {
-            throw new NotAuthorizedException("Invalid Token");
+            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("Invalid Token")
+                    .type(MediaType.TEXT_PLAIN)  // or MediaType.APPLICATION_JSON if you prefer
+                    .build());
         }
 
         return auth;
@@ -125,21 +129,30 @@ public class AppPasswordUtils {
      * @param config The extension config
      * @param attributeName The attribute name
      * @return extracted attribute
-     * @throws BadRequestException If request invalid
+     * @throws WebApplicationException If request invalid
      */
     static AppPasswordConfigAttribute validateAttribute(AppPasswordConfig config, String attributeName) {
         if (attributeName == null) {
-            throw new BadRequestException("Missing attribute name");
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Missing attribute name")
+                    .type(MediaType.TEXT_PLAIN)  // or MediaType.APPLICATION_JSON if you prefer
+                    .build());
         }
 
         if (attributeName == null) {
-            throw new BadRequestException("Missing 'name' field in request");
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Missing 'name' field in request")
+                    .type(MediaType.TEXT_PLAIN)  // or MediaType.APPLICATION_JSON if you prefer
+                    .build());
         }
 
         AppPasswordConfigAttribute attribute = getAttribute(config, attributeName);
 
         if (attribute == null) {
-            throw new BadRequestException("Invalid attribute");
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid attribute")
+                    .type(MediaType.TEXT_PLAIN)  // or MediaType.APPLICATION_JSON if you prefer
+                    .build());
         }
 
         return attribute;
