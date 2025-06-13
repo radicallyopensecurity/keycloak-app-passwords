@@ -78,4 +78,4 @@ make build-dev
 
 ## License
 
-[MIT](./LICENSE.md)
+[LGPL-3.0](./LICENSE.md)
