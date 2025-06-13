@@ -91,16 +91,6 @@ public class AppPasswordUtils {
                 .authenticate();
 
         if (authResult == null) {
-            // fallback to browser session (identity cookie)
-            hasCookie = true;
-            authResult = AuthenticationManager.authenticateIdentityCookie(
-                    session,
-                    session.getContext().getRealm(),
-                    true  // check active session
-            );
-        }
-
-        if (authResult == null) {
             throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
         }
 
