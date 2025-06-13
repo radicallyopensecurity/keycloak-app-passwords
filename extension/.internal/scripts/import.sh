@@ -12,7 +12,7 @@ for i in {1..30}; do
         break
     fi
     echo "Waiting for LDAP... ($i)"
-    sleep 1
+    sleep 2
 done
 
 docker compose run --rm \
