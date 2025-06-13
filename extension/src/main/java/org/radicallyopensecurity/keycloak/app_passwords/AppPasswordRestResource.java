@@ -199,6 +199,9 @@ public class AppPasswordRestResource {
 
         }
 
+        user.removeAttribute(attribute.password);
+        user.removeAttribute(attribute.created);
+
         event.detail(attribute.password, "DELETED")
                 .detail(attribute.created, "DELETED").success();
         return Cors

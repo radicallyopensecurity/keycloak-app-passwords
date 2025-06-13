@@ -37,4 +37,6 @@ build/
 ### Mac OS ###
 .DS_Store
 
-.internal/data/
+.internal/data/import
+.internal/data/h2
+.internal/data/transaction-logs
