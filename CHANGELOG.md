@@ -1,3 +1,11 @@
+## 1.1.8 (2025-06-13)
+
+### Fix
+
+- **extension**: add users to import
+- **extension**: disable session auth
+- **extension**: delete doesn't actually delete
+
 ## 1.1.7 (2025-06-04)
 
 ### Fix
