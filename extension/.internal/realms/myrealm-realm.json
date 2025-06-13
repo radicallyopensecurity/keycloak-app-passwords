@@ -385,20 +385,24 @@
   "webAuthnPolicyPasswordlessAcceptableAaguids" : [ ],
   "webAuthnPolicyPasswordlessExtraOrigins" : [ ],
   "users" : [ {
-    "id" : "77d1b7d9-4cfc-4c04-991b-26a6aa98158d",
+    "id" : "ee5e9223-7d1a-4427-b446-a3cc9d9e6d85",
     "username" : "admin",
-    "firstName" : "admin",
+    "firstName" : "adminfsdffasdf",
     "lastName" : "admin",
     "email" : "admin@example.org",
     "emailVerified" : true,
     "attributes" : {
+      "emailPasswordCreated" : [ "2025-06-13T15:03:52.554810847Z" ],
       "LDAP_ENTRY_DN" : [ "uid=admin,ou=users,dc=example,dc=org" ],
-      "modifyTimestamp" : [ "20250604074003Z" ],
-      "createTimestamp" : [ "20250507193946Z" ],
-      "LDAP_ID" : [ "c6ce5b4e-bfc6-103f-8722-6b9e0d8bfe4e" ]
+      "smsPasswordCreated" : [ "2025-06-13T15:03:53.384765021Z" ],
+      "smsPassword" : [ "$argon2id$v=19$m=65536,t=5,p=1$qNf1CLgVnQpnYNKxS/irDeIYforpu0VFyVtZ8XYX6aO912Q6n32sporRmd9D0c8D29Zsqvzht6eXnJeiY8+cDA$EBDxUsJrNU3817PhEI037GEJUhZgOt+lMoMDLz0SGvWwHqE5C0dPGlpl/AuHbqsMBSPGDqLPUp/KF/cItSLVFQ" ],
+      "emailPassword" : [ "$argon2id$v=19$m=65536,t=5,p=1$QNrtHzb8S0P6AwzTVfhW5JtFgcxo4Er4Vv9rNZ41glxkUa/nTOqm3zVSdAovTYv8+G/7TRxz5uWAfGqnx8sIHw$TJXTvOzAMcksy/o4tTuH1O8jUXcIW8BxuDP5QXnoWyupmBl+nd0zZmzNNe58B7MajUM+KjeqOUrx0HyWTzOQTA" ],
+      "LDAP_ID" : [ "9fe834c4-d569-103f-87c2-275a5f975eff" ],
+      "modifyTimestamp" : [ "20250613150352Z" ],
+      "createTimestamp" : [ "20250604082823Z" ]
     },
     "origin" : "GjPC8ru7RhuK2REn5tGvOA",
-    "createdTimestamp" : 1746646786758,
+    "createdTimestamp" : 1749826411938,
     "enabled" : true,
     "totp" : false,
     "federationLink" : "GjPC8ru7RhuK2REn5tGvOA",
@@ -406,9 +410,30 @@
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
     "realmRoles" : [ "default-roles-myrealm" ],
-    "clientRoles" : {
-      "realm-management" : [ "realm-admin" ]
+    "notBefore" : 0,
+    "groups" : [ "/staff" ]
+  }, {
+    "id" : "82a3d445-d442-4bf6-a64a-9464a79c24b7",
+    "username" : "user",
+    "firstName" : "user",
+    "lastName" : "user",
+    "email" : "user@example.org",
+    "emailVerified" : true,
+    "attributes" : {
+      "LDAP_ENTRY_DN" : [ "uid=user,ou=users,dc=example,dc=org" ],
+      "LDAP_ID" : [ "edc8d26e-d570-103f-9e1a-899b52214cda" ],
+      "modifyTimestamp" : [ "20250604092049Z" ],
+      "createTimestamp" : [ "20250604092041Z" ]
     },
+    "origin" : "GjPC8ru7RhuK2REn5tGvOA",
+    "createdTimestamp" : 1749826411974,
+    "enabled" : true,
+    "totp" : false,
+    "federationLink" : "GjPC8ru7RhuK2REn5tGvOA",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-myrealm" ],
     "notBefore" : 0,
     "groups" : [ "/staff" ]
   } ],
@@ -1320,7 +1345,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-full-name-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper" ]
       }
     }, {
       "id" : "ed350696-12e8-46e2-bad1-03a4351ff378",
@@ -1329,7 +1354,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper", "oidc-full-name-mapper", "oidc-address-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "saml-user-property-mapper", "saml-role-list-mapper" ]
       }
     }, {
       "id" : "22d3a083-77f7-448f-8819-a1bc1213b688",
@@ -1383,8 +1408,8 @@
           "config" : {
             "ldap.attribute" : [ "mail" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "read.only" : [ "false" ],
             "always.read.value.from.ldap" : [ "false" ],
+            "read.only" : [ "false" ],
             "user.model.attribute" : [ "email" ]
           }
         }, {
@@ -1394,11 +1419,11 @@
           "subComponents" : { },
           "config" : {
             "ldap.attribute" : [ "emailPassword" ],
-            "is.mandatory.in.ldap" : [ "false" ],
             "attribute.force.default" : [ "false" ],
+            "is.mandatory.in.ldap" : [ "false" ],
             "is.binary.attribute" : [ "false" ],
-            "read.only" : [ "false" ],
             "always.read.value.from.ldap" : [ "false" ],
+            "read.only" : [ "false" ],
             "user.model.attribute" : [ "emailPassword" ]
           }
         }, {
@@ -1427,8 +1452,8 @@
           "config" : {
             "ldap.attribute" : [ "sn" ],
             "is.mandatory.in.ldap" : [ "true" ],
-            "always.read.value.from.ldap" : [ "true" ],
             "read.only" : [ "false" ],
+            "always.read.value.from.ldap" : [ "true" ],
             "user.model.attribute" : [ "lastName" ]
           }
         }, {
@@ -1451,8 +1476,8 @@
           "config" : {
             "ldap.attribute" : [ "uid" ],
             "is.mandatory.in.ldap" : [ "true" ],
-            "read.only" : [ "false" ],
             "always.read.value.from.ldap" : [ "false" ],
+            "read.only" : [ "false" ],
             "user.model.attribute" : [ "username" ]
           }
         } ]
@@ -1469,14 +1494,14 @@
         "importEnabled" : [ "true" ],
         "enabled" : [ "true" ],
         "bindDn" : [ "cn=admin,dc=example,dc=org" ],
-        "changedSyncPeriod" : [ "-1" ],
-        "bindCredential" : [ "admin" ],
         "usernameLDAPAttribute" : [ "uid" ],
+        "bindCredential" : [ "admin" ],
+        "changedSyncPeriod" : [ "-1" ],
         "lastSync" : [ "1746632447" ],
         "vendor" : [ "other" ],
         "uuidLDAPAttribute" : [ "entryUUID" ],
-        "connectionUrl" : [ "ldap://openldap:1389" ],
         "allowKerberosAuthentication" : [ "false" ],
+        "connectionUrl" : [ "ldap://openldap:1389" ],
         "syncRegistrations" : [ "true" ],
         "authType" : [ "simple" ],
         "krbPrincipalAttribute" : [ "krb5PrincipalName" ],
