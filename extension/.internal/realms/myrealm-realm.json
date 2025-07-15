@@ -2202,7 +2202,7 @@
     "clientSessionMaxLifespan" : "0",
     "darkMode" : "false"
   },
-  "keycloakVersion" : "26.2.4",
+  "keycloakVersion" : "26.3.1",
   "userManagedAccessAllowed" : false,
   "organizationsEnabled" : false,
   "verifiableCredentialsEnabled" : false,
