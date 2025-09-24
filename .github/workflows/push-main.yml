@@ -23,12 +23,18 @@ jobs:
         id: check-bump
         run: |
           msg="$(git log -1 --pretty=%B)"
-          echo "message=$msg" >> $GITHUB_OUTPUT
 
+          {
+            echo "message<<EOF"
+            echo "$msg"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          # check prefix
           if [[ "$msg" == bump:* ]]; then
-            echo "is-bump=true" >> $GITHUB_OUTPUT
+            echo "is-bump=true" >> "$GITHUB_OUTPUT"
           else
-            echo "is-bump=false" >> $GITHUB_OUTPUT
+            echo "is-bump=false" >> "$GITHUB_OUTPUT"
           fi
 
   version:
