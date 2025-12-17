@@ -2,7 +2,7 @@
 # INSECURE SETTINGS
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:26.3.4
+    image: quay.io/keycloak/keycloak:26.4.7
     container_name: keycloak
     command: start-dev
     ports:
@@ -34,7 +34,7 @@ services:
       - default
 
   openldap:
-    image: bitnami/openldap:2.6.9
+    image: cleanstart/openldap:2.6-amd64
     container_name: openldap
     ports:
       - '1389:1389'

@@ -40,3 +40,5 @@ build/
 .internal/data/import
 .internal/data/h2
 .internal/data/transaction-logs
+
+mise.toml
