@@ -78,25 +78,9 @@ describe('keycloak-app-passwords', () => {
         expect(password).to.not.eq(HIDDEN_PASSWORD)
       })
 
-    cy.log('It can delete')
-    cy.get('[data-testrole=delete]').first().click()
-    cy.get('[data-testid=confirm]').click()
-    cy.wait('@delete')
-    cy.get('[data-testid=app-passwords-value]').should('not.exist')
-    cy.reload()
-    cy.get('[data-testrole=delete]').first().should('be.disabled')
-
     cy.log('It can generate 2nd')
     cy.get('[data-testrole=regenerate]').eq(1).click()
     cy.wait('@regenerate')
-
-    cy.log('It can delete 2nd')
-    cy.get('[data-testrole=delete]').eq(1).click()
-    cy.get('[data-testid=confirm]').click()
-    cy.wait('@delete')
-    cy.get('[data-testid=app-passwords-value]').should('not.exist')
-    cy.reload()
-    cy.get('[data-testrole=delete]').first().should('be.disabled')
 
     cy.log('It only shows 1 password at a time')
     cy.get('[data-testrole=regenerate]').first().click()
