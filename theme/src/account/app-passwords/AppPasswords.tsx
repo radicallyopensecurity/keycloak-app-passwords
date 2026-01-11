@@ -72,7 +72,6 @@ export const AppPasswords: React.FC = () => {
     const [generatedPassword, setGeneratedPassword] = useState<
         AppPasswordGenerateRepresentation | undefined
     >();
-    const [deleteModal, setDeleteModal] = useState<boolean | string>(false);
     const [regenerateModal, setRegenerateModal] = useState<boolean | string>(false);
 
     usePromise(
@@ -103,25 +102,6 @@ export const AppPasswords: React.FC = () => {
                     created: generatedPassword.created
                 }
             ]);
-        setAppPasswords(newAppPasswords);
-    };
-
-    const deleteAppPassword = async (appPasswordName: string) => {
-        if (!realm) {
-            return;
-        }
-
-        await appPasswordClient.delete(context, appPasswordName);
-
-        const newAppPasswords = appPasswords
-            .filter(x => x.name !== appPasswordName)
-            .concat([
-                {
-                    name: appPasswordName,
-                    created: null
-                }
-            ]);
-        setGeneratedPassword(undefined);
         setAppPasswords(newAppPasswords);
     };
 
@@ -171,14 +151,6 @@ export const AppPasswords: React.FC = () => {
                                                         ? "appPasswordRegenerate"
                                                         : "appPasswordGenerate"
                                                 )}
-                                            </Button>
-                                            <Button
-                                                variant="danger"
-                                                onClick={() => setDeleteModal(item.name)}
-                                                isDisabled={!item.created}
-                                                data-testrole="delete"
-                                            >
-                                                {t("delete")}
                                             </Button>
                                         </DataListAction>
                                     ]}
@@ -253,39 +225,6 @@ export const AppPasswords: React.FC = () => {
                 isOpen={!!regenerateModal}
             >
                 {t("appPasswordRegenerateDescription")}
-            </Modal>
-            <Modal
-                title={t("appPasswordDeleteModal", {
-                    name: !!deleteModal
-                        ? t(`appPasswordItem${capitalize(deleteModal as string)}`)
-                        : ""
-                })}
-                onClose={() => setDeleteModal(false)}
-                variant={ModalVariant.small}
-                actions={[
-                    <Button
-                        key="delete"
-                        variant="danger"
-                        data-testid="confirm"
-                        onClick={() => {
-                            deleteAppPassword(deleteModal as string);
-                            setDeleteModal(false);
-                        }}
-                    >
-                        {t("delete")}
-                    </Button>,
-                    <Button
-                        key="cancel"
-                        data-testid="cancel"
-                        variant={ButtonVariant.link}
-                        onClick={() => setDeleteModal(false)}
-                    >
-                        {t("cancel")}
-                    </Button>
-                ]}
-                isOpen={!!deleteModal}
-            >
-                {t("appPasswordDeleteDescription")}
             </Modal>
         </Page>
     );

@@ -38,29 +38,6 @@ const generateAppPassword = async (
     return parseResponse<AppPasswordGenerateRepresentation>(response);
 };
 
-const deleteAppPassword = async (
-    context: KeycloakContext<BaseEnvironment>,
-    appPasswordName: string
-) => {
-    const path = `/realms/${context.environment.realm}/app-password`;
-    const url = new URL(joinPath(context.environment.serverBaseUrl, path));
-    const body = {
-        name: appPasswordName
-    };
-
-    await request(
-        path,
-        context,
-        {
-            method: "DELETE",
-            body
-        },
-        url
-    );
-
-    return;
-};
-
 const isEnabled = async (
     signal: AbortSignal,
     context: KeycloakContext<BaseEnvironment>
@@ -76,6 +53,5 @@ const isEnabled = async (
 export const appPasswordClient = {
     list: listAppPasswords,
     generate: generateAppPassword,
-    delete: deleteAppPassword,
     isEnabled
 };
