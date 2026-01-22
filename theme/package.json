@@ -34,7 +34,7 @@
         "i18next": "^24.2.3",
         "i18next-fetch-backend": "^6.0.0",
         "keycloak-js": "^26.2.0",
-        "lodash-es": "^4.17.21",
+        "lodash-es": "^4.17.23",
         "react-hook-form": "^7.54.2",
         "react-i18next": "^15.4.1",
         "react-router-dom": "^6.30.0",
