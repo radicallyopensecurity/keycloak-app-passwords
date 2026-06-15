@@ -107,7 +107,7 @@ public class AppPasswordRestResource {
 
         return Cors
                 .builder()
-                .allowedOrigins(auth.getToken())
+                .checkAllowedOrigins(auth.getToken())
                 .allowedMethods("GET")
                 .add(Response.ok(result));
     }
@@ -164,7 +164,7 @@ public class AppPasswordRestResource {
                 .detail(attribute.created, now).success();
         return Cors
                 .builder()
-                .allowedOrigins(auth.getToken())
+                .checkAllowedOrigins(auth.getToken())
                 .allowedMethods("POST")
                 .add(Response.ok(result));
     }
@@ -206,7 +206,7 @@ public class AppPasswordRestResource {
                 .detail(attribute.created, "DELETED").success();
         return Cors
                 .builder()
-                .allowedOrigins(auth.getToken())
+                .checkAllowedOrigins(auth.getToken())
                 .allowedMethods("DELETE")
                 .add(Response.noContent());
     }
@@ -265,7 +265,7 @@ public class AppPasswordRestResource {
         event.detail("Verified", String.valueOf(verified)).success();
         return Cors
                 .builder()
-                .allowedOrigins(auth.getToken())
+                .checkAllowedOrigins(auth.getToken())
                 .allowedMethods("POST")
                 .add(Response.ok(result));
     }
@@ -305,7 +305,7 @@ public class AppPasswordRestResource {
 
         return Cors
                 .builder()
-                .allowedOrigins(auth.getToken())
+                .checkAllowedOrigins(auth.getToken())
                 .allowedMethods("GET")
                 .add(Response.ok(result));
     }
