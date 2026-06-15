@@ -13,8 +13,8 @@
     "open": "cypress open"
   },
   "devDependencies": {
-    "cypress": "15.3.0",
-    "typescript": "5.9.2"
+    "cypress": "15.8.2",
+    "typescript": "5.9.3"
   },
   "engines": {
     "node": "^18.0.0 || >=20.0.0"
