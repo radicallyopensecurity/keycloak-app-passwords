@@ -1,4 +1,4 @@
 [tools]
-java = "latest"
+java = "temurin-21"
 maven = "latest"
-node = "latest"
+node = "24"

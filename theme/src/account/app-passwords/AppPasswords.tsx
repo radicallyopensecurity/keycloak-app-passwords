@@ -17,9 +17,8 @@ import {
     TextContent
 } from "@patternfly/react-core";
 import { CSSProperties, useState } from "react";
-import { useEnvironment } from "../../shared/keycloak-ui-shared";
+import { BaseEnvironment, useEnvironment } from "../../shared/keycloak-ui-shared";
 import { appPasswordClient } from "./app-password-client";
-import { Environment } from "../environment";
 import { usePromise } from "../utils/usePromise";
 import { TFunction } from "i18next";
 import { formatDate } from "../utils/formatDate";
@@ -66,7 +65,7 @@ const appPasswordRowCells = (
 
 export const AppPasswords: React.FC = () => {
     const { t } = useTranslation();
-    const context = useEnvironment<Environment>();
+    const context = useEnvironment<BaseEnvironment>();
     const [appPasswords, setAppPasswords] = useState<AppPasswordListRepresentation[]>([]);
     const realm = context.keycloak.realm;
     const [generatedPassword, setGeneratedPassword] = useState<
