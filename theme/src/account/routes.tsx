@@ -24,7 +24,6 @@ const Groups = lazy(() => import("./groups/Groups"));
 const PersonalInfo = lazy(() => import("./personal-info/PersonalInfo"));
 const Resources = lazy(() => import("./resources/Resources"));
 const ContentComponent = lazy(() => import("./content/ContentComponent"));
-const Oid4Vci = lazy(() => import("./oid4vci/Oid4Vci"));
 
 export const DeviceActivityRoute: RouteObject = {
     path: "account-security/device-activity",
@@ -76,11 +75,6 @@ export const OrganizationsRoute: RouteObject = {
     element: <Organizations />
 };
 
-export const Oid4VciRoute: RouteObject = {
-    path: "oid4vci",
-    element: <Oid4Vci />
-};
-
 export const AppPasswordsRoute: RouteObject = {
     path: "app-passwords",
     element: <AppPasswords />
@@ -97,6 +91,5 @@ export const routes: RouteObject[] = [
     PersonalInfoRoute,
     ResourcesRoute,
     ContentRoute,
-    ...(environment.features.isOid4VciEnabled ? [Oid4VciRoute] : []),
-    AppPasswordsRoute //TODO: Make conditional
+    AppPasswordsRoute // TODO: Make conditional
 ];
