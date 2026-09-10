@@ -120,7 +120,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '25'
 
       - name: Build & Test Extension
         run: ./.internal/ci/build-extension.sh
@@ -217,7 +217,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '25'
       - name: Setup Pyhon
         uses: actions/setup-python@v5
         with:
