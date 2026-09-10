@@ -1,6 +1,6 @@
 package org.radicallyopensecurity.keycloak.app_passwords;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.UserModel;
 import org.radicallyopensecurity.keycloak.app_passwords.config.AppPasswordConfig;
@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AppPasswordUtilsTest {
 

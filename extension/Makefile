@@ -20,3 +20,12 @@ import:
 export:
 	THEME_PATH=$$(realpath ../theme/dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar) \
 	./.internal/scripts/export.sh
+
+check-deps:
+	mvn versions:display-dependency-updates -DprocessDependencyManagement=false -DshowVersionless=false
+
+upgrade-deps:
+	mvn versions:use-latest-versions -DgenerateBackupPoms=false
+
+check-plugins:
+	mvn versions:display-plugin-updates

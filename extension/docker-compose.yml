@@ -1,8 +1,7 @@
 # DO NOT USE THIS IN PRODUCTION
-# INSECURE SETTINGS
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:26.3.4
+    image: quay.io/keycloak/keycloak:26.7.3
     container_name: keycloak
     command: start-dev
     ports:
@@ -14,7 +13,6 @@ services:
       KC_DB: dev-file
       KC_HTTP_ENABLED: 'true'
       # DO NOT USE THIS IN PRODUCTION
-      # INSECURE SETTINGS
       KC_BOOTSTRAP_ADMIN_USERNAME: 'admin'
       KC_BOOTSTRAP_ADMIN_PASSWORD: 'admin'
       KC_LOG_LEVEL: 'info'
@@ -33,8 +31,9 @@ services:
     networks:
       - default
 
+  # TODO: Find new openldap image
   openldap:
-    image: bitnami/openldap:2.6.9
+    image: bitnamilegacy/openldap:2.6.10
     container_name: openldap
     ports:
       - '1389:1389'

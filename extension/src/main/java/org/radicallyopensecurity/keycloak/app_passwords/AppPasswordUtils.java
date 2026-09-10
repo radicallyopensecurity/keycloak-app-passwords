@@ -8,9 +8,9 @@ import org.keycloak.models.*;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.services.managers.AuthenticationManager;
-import org.passay.CharacterRule;
-import org.passay.EnglishCharacterData;
-import org.passay.PasswordGenerator;
+import org.passay.data.EnglishCharacterData;
+import org.passay.generate.PasswordGenerator;
+import org.passay.rule.CharacterRule;
 import org.radicallyopensecurity.keycloak.app_passwords.config.AppPasswordConfig;
 import org.radicallyopensecurity.keycloak.app_passwords.config.AppPasswordConfigAttribute;
 
@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class AppPasswordUtils {
-    private static final PasswordGenerator Generator = new PasswordGenerator();
     private static final List<CharacterRule> PasswordRules = List.of(
             new CharacterRule(EnglishCharacterData.UpperCase, 2),
             new CharacterRule(EnglishCharacterData.LowerCase, 2),
@@ -72,7 +71,9 @@ public class AppPasswordUtils {
         if (length < 20) {
             throw new IllegalArgumentException("Password length must be at least 20");
         }
-        return AppPasswordUtils.Generator.generatePassword(length, PasswordRules);
+
+        PasswordGenerator generator = new PasswordGenerator(length, AppPasswordUtils.PasswordRules);
+        return generator.generate().toString();
     }
 
     /**
@@ -96,12 +97,13 @@ public class AppPasswordUtils {
 
         RealmModel realm = session.getContext().getRealm();
         ClientModel client = realm.getClientByClientId(Constants.ACCOUNT_MANAGEMENT_CLIENT_ID);
+
         Auth auth = new Auth(
                 session.getContext().getRealm(),
-                authResult.getToken(),
-                authResult.getUser(),
+                authResult.token(),
+                authResult.user(),
                 client,
-                authResult.getSession(),
+                authResult.session(),
                 hasCookie);
 
         if (auth == null) {
@@ -161,6 +163,7 @@ public class AppPasswordUtils {
                 .filter(item -> item.password.equals(attributeName))
                 .findFirst()
                 .orElse(null);
+
         return attribute;
     }
 

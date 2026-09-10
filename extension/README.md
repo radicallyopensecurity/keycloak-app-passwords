@@ -61,9 +61,9 @@ In this repository we use `OpenLDAP`, first we add the attribute we want to use 
 
 This file is located in [`email.ldif`](.internal/ldap/email.ldif). To add it to `OpenLDAP`, see [`add-schema.sh`](.internal/ldap/add-schema.sh).
 
-After configuring `LDAP`, we configure `Keycloak` by going to `Realm settings->User federation` and add an `LDAP` provider. In the development version in this repo, this is already configured.
+After configuring `LDAP`, we configure `Keycloak` by going to `Realm settings -> User federation` and add an `LDAP` provider. In the development version in this repo, this is already configured.
 
-In this repo we use the following configuration in `Keycloak`, modify these as needed:
+We use the following configuration in `Keycloak`, modify these as needed:
 
 ```
 Connection URL: ldap://openldap:1389
@@ -74,7 +74,7 @@ Users DN: ou=users,dc=example,dc=org
 User object classes: inetOrgPerson, organizationalPerson,emailUser
 ```
 
-Now go to `mappers` under `Realm settings->User federation->ldap` and create a mapper for your attribute. For the `emailPassword` we create a mapper with the following configuration:
+Now go to `mappers` under `Realm settings -> User federation->ldap` and create a mapper for your attribute. For the `emailPassword` we create a mapper with the following configuration:
 
 ```
 Name: emailPasswordMapper
@@ -132,6 +132,17 @@ docker compose up openldap
 make export
 # or
 ./.internal/scripts/export.sh
+```
+
+### Check for dependency updates
+
+```sh
+make check-deps
+# update to latest
+make upgrade-deps
+
+# plugins - must be manually updated
+make check-plugins
 ```
 
 An `Intellij` debugger configuration is available called `attach to docker`.

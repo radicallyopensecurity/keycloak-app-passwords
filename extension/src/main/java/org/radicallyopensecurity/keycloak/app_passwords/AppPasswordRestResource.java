@@ -88,6 +88,7 @@ public class AppPasswordRestResource {
 
         if (!AppPasswordUtils.hasValidGroup(config, userGroups)) {
             KeycloakContext context = session.getContext();
+
             new EventBuilder(session.getContext().getRealm(), session)
                     .event(EventType.CUSTOM_REQUIRED_ACTION)
                     .detail("Endpoint", "List App Passwords")
@@ -95,6 +96,7 @@ public class AppPasswordRestResource {
                     .ipAddress(context.getConnection().getRemoteAddr())
                     .client(auth.getClient())
                     .error("Unauthorized");
+
             throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
         }
 
@@ -162,6 +164,7 @@ public class AppPasswordRestResource {
 
         event.detail(attribute.password, "SECRET")
                 .detail(attribute.created, now).success();
+
         return Cors
                 .builder()
                 .checkAllowedOrigins(auth.getToken())
