@@ -87,7 +87,9 @@ jobs:
           java-version: '21'
 
       - name: Build & Test Extension
-        run: ./.internal/ci/build-extension.sh
+        run: |
+          ./.internal/ci/build-extension.sh
+          ./.internal/ci/test-integration-extension.sh
 
       - name: Rename Jar
         run: |
