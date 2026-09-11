@@ -68,8 +68,8 @@ public class AppPasswordUtils {
      * @return Secure password with defined length
      */
     static String generateSecurePassword(int length) {
-        if (length < 20) {
-            throw new IllegalArgumentException("Password length must be at least 20");
+        if (length < 14) {
+            throw new IllegalArgumentException("Password length must be at least 14");
         }
 
         PasswordGenerator generator = new PasswordGenerator(length, AppPasswordUtils.PasswordRules);

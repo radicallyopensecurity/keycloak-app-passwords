@@ -146,11 +146,11 @@ class AppPasswordUtilsTest {
     void generateSecurePasswordRejectsTooShortPassword() {
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> AppPasswordUtils.generateSecurePassword(19)
+                () -> AppPasswordUtils.generateSecurePassword(13)
         );
 
         assertEquals(
-                "Password length must be at least 20",
+                "Password length must be at least 14",
                 exception.getMessage()
         );
     }
