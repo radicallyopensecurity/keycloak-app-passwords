@@ -8,6 +8,7 @@ target/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -37,6 +38,6 @@ build/
 ### Mac OS ###
 .DS_Store
 
-.internal/data/import
-.internal/data/h2
-.internal/data/transaction-logs
+# docker volumes
+.internal/data/**/*
+!.internal/data/.gitkeep

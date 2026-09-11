@@ -1,8 +1,7 @@
 # DO NOT USE THIS IN PRODUCTION
-# INSECURE SETTINGS
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:26.3.4
+    image: quay.io/keycloak/keycloak:26.7.3
     container_name: keycloak
     command: start-dev
     ports:
@@ -14,7 +13,6 @@ services:
       KC_DB: dev-file
       KC_HTTP_ENABLED: 'true'
       # DO NOT USE THIS IN PRODUCTION
-      # INSECURE SETTINGS
       KC_BOOTSTRAP_ADMIN_USERNAME: 'admin'
       KC_BOOTSTRAP_ADMIN_PASSWORD: 'admin'
       KC_LOG_LEVEL: 'info'
@@ -28,13 +26,14 @@ services:
       - ${THEME_PATH:-./.internal/data}:/opt/keycloak/providers/keycloak-app-passwords-theme.jar
       - ${EXTENSION_PATH:-./target/keycloak-app-passwords-DEV.jar}:/opt/keycloak/providers/keycloak-app-passwords-extension.jar
       - ${CONFIG_PATH:-./target/keycloak-app-passwords.config.json}:/usr/local/src/keycloak/current/keycloak-app-passwords.config.json
-      - ./.internal/data:/opt/keycloak/data
-      - ./.internal/realms:/opt/keycloak/data/import
+      - ./.internal/data/keycloak:/opt/keycloak/data
+      - ./.internal/keycloak:/opt/keycloak/data/import
     networks:
       - default
 
+  # TODO: Find new openldap image
   openldap:
-    image: bitnami/openldap:2.6.9
+    image: bitnamilegacy/openldap:2.6.10
     container_name: openldap
     ports:
       - '1389:1389'
@@ -45,14 +44,10 @@ services:
       - LDAP_ROOT=dc=example,dc=org
       - LDAP_ADMIN_DN=cn=admin,dc=example,dc=org
     volumes:
-      - openldap:/bitnami/openldap
-      - ./.internal/ldap:/tmp/ldapscripts
+      - ./.internal/data/openldap:/bitnami/openldap
+      - ./.internal/openldap:/tmp/ldapscripts
     networks:
       - default
-
-volumes:
-  openldap:
-    driver: local
 
 networks:
   default:
