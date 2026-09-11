@@ -1733,7 +1733,7 @@
     },
     "smtpServer": {},
     "loginTheme": "",
-    "accountTheme": "keycloak-app-passwords-theme",
+    "accountTheme": "keycloak-app-passwords",
     "adminTheme": "",
     "emailTheme": "",
     "eventsEnabled": false,
