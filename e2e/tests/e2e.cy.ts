@@ -51,10 +51,25 @@ describe('keycloak-app-passwords', () => {
           cy.stub(win.navigator.clipboard, 'writeText').as('clipboardWrite')
         })
 
-        cy.log('It can copy the password')
+        cy.log('It can copy the password using the copy button')
         cy.get('[data-testid=app-passwords-copy]').first().click()
 
         cy.get('@clipboardWrite').should('have.been.calledOnceWith', password)
+
+        cy.log('It can copy the password by clicking the password')
+        cy.get('[data-testid=app-passwords-value]').click()
+
+        cy.get('@clipboardWrite').should('have.been.calledTwice')
+
+        cy.get('@clipboardWrite').should('have.been.calledWith', password)
+
+        cy.log('Clicking the password selects the full password')
+        cy.window().then((win) => {
+          const selection = win.getSelection()
+
+          expect(selection).to.not.be.null
+          expect(selection?.toString()).to.eq(password)
+        })
       })
 
     cy.log('It can hide the password again')
@@ -64,6 +79,20 @@ describe('keycloak-app-passwords', () => {
       'contain.text',
       HIDDEN_PASSWORD,
     )
+
+    cy.log('Clicking a hidden password still copies the real password')
+    cy.get('@password1').then((password1) => {
+      cy.get('[data-testid=app-passwords-value]').click()
+
+      cy.get('@clipboardWrite').should('have.been.calledWith', password1)
+
+      cy.window().then((win) => {
+        const selection = win.getSelection()
+
+        expect(selection).to.not.be.null
+        expect(selection?.toString()).to.eq(HIDDEN_PASSWORD)
+      })
+    })
 
     cy.log('It can regenerate')
     cy.get('[data-testrole=regenerate]').first().click()

@@ -1,11 +1,12 @@
 import { Button, Flex, FlexItem, Tooltip } from "@patternfly/react-core";
 import { CopyIcon, EyeIcon, EyeSlashIcon } from "@patternfly/react-icons";
-import React, { createRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const copyToClipboard = (text: string) => {
+const copyToClipboard = async (text: string) => {
     try {
-        navigator.clipboard.writeText(text.toString());
+        await navigator.clipboard.writeText(text);
+        return true;
     } catch (error) {
         // eslint-disable-next-line no-console
         console.warn(
@@ -18,7 +19,27 @@ const copyToClipboard = (text: string) => {
 
         // eslint-disable-next-line no-console
         console.error(error);
+
+        return false;
     }
+};
+
+const selectText = (element: HTMLElement | null) => {
+    if (element === null) {
+        return;
+    }
+
+    const selection = window.getSelection();
+
+    if (selection === null) {
+        return;
+    }
+
+    const range = document.createRange();
+    range.selectNodeContents(element);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
 };
 
 type PasswordProps = {
@@ -26,21 +47,25 @@ type PasswordProps = {
 };
 
 export const Password: React.FC<PasswordProps> = ({ value }) => {
-    const copyRef = createRef<HTMLButtonElement>();
-    const revealRef = createRef<HTMLButtonElement>();
-    const [copied, setCopied] = useState(false);
+    const copyRef = useRef<HTMLButtonElement>(null);
+    const revealRef = useRef<HTMLButtonElement>(null);
+    const passwordRef = useRef<HTMLSpanElement>(null);
+
+    const [copyButtonCopied, setCopyButtonCopied] = useState(false);
+    const [passwordCopied, setPasswordCopied] = useState(false);
+
     const [revealed, setRevealed] = useState(false);
+
     const { t } = useTranslation();
 
     const password = revealed ? value : "●".repeat(value.length);
-
     const RevealIcon = revealed ? EyeSlashIcon : EyeIcon;
 
-    const clipboardText = copied
-        ? t("appPasswordCopiedToClipboard")
-        : t("appPasswordCopyToClipboard");
-
     const revealedText = revealed ? t("appPasswordHideText") : t("appPasswordRevealText");
+
+    const copyPassword = async () => {
+        return copyToClipboard(value);
+    };
 
     return (
         <Flex
@@ -51,13 +76,40 @@ export const Password: React.FC<PasswordProps> = ({ value }) => {
             }}
             columnGap={{ default: "columnGapSm" }}
         >
-            <FlexItem
-                as="span"
-                className="pf-v5-u-font-family-monospace"
-                data-testid="app-passwords-value"
-            >
-                {password}
+            <FlexItem>
+                <Tooltip
+                    trigger="mouseenter focus click"
+                    triggerRef={passwordRef}
+                    content={
+                        passwordCopied
+                            ? t("appPasswordCopiedToClipboard")
+                            : t("appPasswordCopyToClipboard")
+                    }
+                    exitDelay={1000}
+                    entryDelay={300}
+                    onTooltipHidden={() => setPasswordCopied(false)}
+                >
+                    <span
+                        ref={passwordRef}
+                        className="pf-v5-u-font-family-monospace"
+                        data-testid="app-passwords-value"
+                        style={{
+                            cursor: "pointer",
+                            userSelect: "all"
+                        }}
+                        onClick={async () => {
+                            selectText(passwordRef.current);
+
+                            if (await copyPassword()) {
+                                setPasswordCopied(true);
+                            }
+                        }}
+                    >
+                        {password}
+                    </span>
+                </Tooltip>
             </FlexItem>
+
             <Flex columnGap={{ default: "columnGapSm" }}>
                 <Tooltip
                     trigger="mouseenter focus click"
@@ -76,24 +128,28 @@ export const Password: React.FC<PasswordProps> = ({ value }) => {
                         <RevealIcon />
                     </Button>
                 </Tooltip>
+
                 <Tooltip
                     trigger="mouseenter focus click"
                     triggerRef={copyRef}
-                    content={clipboardText}
+                    content={
+                        copyButtonCopied
+                            ? t("appPasswordCopiedToClipboard")
+                            : t("appPasswordCopyToClipboard")
+                    }
                     exitDelay={1000}
                     entryDelay={300}
-                    onTooltipHidden={() => {
-                        setCopied(false);
-                    }}
+                    onTooltipHidden={() => setCopyButtonCopied(false)}
                 >
                     <Button
                         variant="plain"
                         style={{ padding: 0 }}
                         ref={copyRef}
                         data-testid="app-passwords-copy"
-                        onClick={() => {
-                            copyToClipboard(value);
-                            setCopied(true);
+                        onClick={async () => {
+                            if (await copyPassword()) {
+                                setCopyButtonCopied(true);
+                            }
                         }}
                     >
                         <CopyIcon />
