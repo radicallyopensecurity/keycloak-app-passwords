@@ -4,7 +4,7 @@ This extension adds a REST API to `Keycloak` that allows application-specific pa
 
 ## Dependencies
 
-- Java 17
+- Java 21
 - Maven
 - Make
 - Docker
@@ -13,9 +13,9 @@ This extension adds a REST API to `Keycloak` that allows application-specific pa
 
 This extension adds 4 new routes to each realm:
 
-- `GET /realms/myrealm/app-passwords`: Get a list of all app passwords that the user has
-- `POST /realms/myrealm/app-passwords`: Generate a new secure app password
-- `DELETE /realms/myrealm/app-passwords`: Delete an app password
+- `GET /realms/myrealm/app-passwords`: Get a list of all app passwords that the user has.
+- `POST /realms/myrealm/app-passwords`: Generate a new secure app password.
+- `DELETE /realms/myrealm/app-passwords`: Delete an app password.
 - `POST /realms/myrealm/app-passwords/check`: Check if a password matches the value stored in the user attribute.
 - `GET /realms/myrealm/app-passwords/enabled`: Check if app passwords feature is enabled for this user.
 
@@ -41,7 +41,7 @@ You can place the `keycloak-app-passwords.config.json` either in `/opt/keycloak/
 
 You can now call the REST API using either `bearer` or `session` authentication:
 
-See the scripts for [`bearer`](.internal/api/bearer.sh) and [`session`](.internal/api/session.sh) for how to call the API.
+See the scripts for [`bearer.sh`](.internal/keycloak/bearer.sh) for how to call the API.
 
 By default, app passwords is enabled for all users. You can control this by setting the `groups` key in the `config.json`:
 
@@ -53,17 +53,17 @@ By default, app passwords is enabled for all users. You can control this by sett
 
 ### LDAP
 
-This extension was built for [radicallyopensecurity](https://radicallyopensecurity.com) to allow `dovecot` and `postfix` to authenticate using a password separate from the `Keycloak` credentials.
+This extension was built for [Radically Open Security](https://radicallyopensecurity.com) to allow `dovecot` and `postfix` to authenticate using a password separate from the `Keycloak` credentials.
 
 To use LDAP some configuration is required.
 
-In this repository we use `OpenLDAP`, first we add the attribute we want to use to LDAP, `emailUser`, by adding a schema fragment.
+In this repository we use `OpenLDAP`. First we add the attribute we want to use to LDAP by adding a schema fragment.
 
-This file is located in [`email.ldif`](.internal/ldap/email.ldif). To add it to `OpenLDAP`, see [`add-schema.sh`](.internal/ldap/add-schema.sh).
+This file is located in [`email.ldif`](.internal/openldap/email.ldif). To add it to `OpenLDAP`, see [`add-schema.sh`](.internal/openldap/add-schema.sh).
 
-After configuring `LDAP`, we configure `Keycloak` by going to `Realm settings->User federation` and add an `LDAP` provider. In the development version in this repo, this is already configured.
+Next, go to `Realm settings -> User federation` and add an `LDAP` provider. In the development version in this repo this is already configured.
 
-In this repo we use the following configuration in `Keycloak`, modify these as needed:
+We use the following configuration in `Keycloak`, modify these as needed:
 
 ```
 Connection URL: ldap://openldap:1389
@@ -74,7 +74,7 @@ Users DN: ou=users,dc=example,dc=org
 User object classes: inetOrgPerson, organizationalPerson,emailUser
 ```
 
-Now go to `mappers` under `Realm settings->User federation->ldap` and create a mapper for your attribute. For the `emailPassword` we create a mapper with the following configuration:
+Now go to `mappers` under `Realm settings -> User federation -> ldap` and create a mapper for your attribute. For the `emailPassword` we create a mapper with the following configuration:
 
 ```
 Name: emailPasswordMapper
@@ -83,9 +83,9 @@ User Model Attribute: emailPassword
 LDAP Attribute: emailPassword
 ```
 
-Now any new users will get added to `OpenLDAP` and any app passwords that are generated will be stored in `LDAP`.
+Any new users will now get added to `OpenLDAP` and any app passwords that are generated will be stored in `LDAP`.
 
-See [`search-all.sh`](.internal/ldap/search-all.sh) to see how to validate that your app passwords are stored in `LDAP`.
+See [`search-all.sh`](.internal/openldap/search-all.sh) to see how to validate that your app passwords are stored in `LDAP`.
 
 ## Development
 
@@ -100,7 +100,10 @@ First time starting, you can use the import script to import realm settings need
 Initialize LDAP:
 
 ```sh
-docker compose up openldap
+# create gitignored data folders
+make init-data
+
+docker compose up openldap -d
 docker exec -it openldap /bin/sh
 cd /tmp/ldapscripts
 sh add-schema.sh
@@ -108,10 +111,9 @@ sh add-schema.sh
 
 ```sh
 # make sure openldap is running
-docker compose up openldap
+docker compose up openldap -d
 
 make import
-# or
 ./.internal/scripts/import.sh
 ```
 
@@ -138,8 +140,33 @@ An `Intellij` debugger configuration is available called `attach to docker`.
 
 ## Test
 
-```sh
+Run both unit tests and integration tests:
+
+```shell
 make test
+```
+
+Run just the unit tests:
+
+```sh
+make test-unit
+```
+
+Run just the integration tests:
+
+```sh
+make test-integration
+```
+
+## Check for dependency updates
+
+```sh
+make check-deps
+# update to latest
+make upgrade-deps
+
+# plugins - must be manually updated
+make check-plugins
 ```
 
 ## Known Issues
@@ -164,4 +191,4 @@ This [GitHub issue](https://github.com/keycloak/keycloak/issues/11114) suggests,
 
 ## License
 
-[MIT](./LICENSE.md)
+[LGPL-3.0](../LICENSE.md)

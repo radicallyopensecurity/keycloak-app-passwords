@@ -26,7 +26,7 @@
     "oauth2DeviceCodeLifespan": 600,
     "oauth2DevicePollingInterval": 5,
     "enabled": true,
-    "sslRequired": "external",
+    "sslRequired": "none",
     "registrationAllowed": true,
     "registrationEmailAsUsername": false,
     "rememberMe": true,
@@ -1732,7 +1732,7 @@
         "strictTransportSecurity": "max-age=31536000; includeSubDomains"
     },
     "smtpServer": {},
-    "loginTheme": "keycloak-app-passwords",
+    "loginTheme": "",
     "accountTheme": "keycloak-app-passwords",
     "adminTheme": "",
     "emailTheme": "",

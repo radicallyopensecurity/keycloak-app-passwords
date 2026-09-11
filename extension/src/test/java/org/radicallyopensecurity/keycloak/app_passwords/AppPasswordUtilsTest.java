@@ -1,8 +1,9 @@
 package org.radicallyopensecurity.keycloak.app_passwords;
 
-import org.junit.Test;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.UserModel;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.keycloak.events.EventBuilder;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.radicallyopensecurity.keycloak.app_passwords.config.AppPasswordConfig;
 import org.radicallyopensecurity.keycloak.app_passwords.config.AppPasswordConfigAttribute;
 
@@ -13,150 +14,248 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 
-public class AppPasswordUtilsTest {
+@ExtendWith(MockitoExtension.class)
+class AppPasswordUtilsTest {
 
     @Test
-    public void createConfigLoadOverrides() throws IOException {
+    void createConfigLoadOverrides() throws IOException {
         Path tempConfig = Files.createTempFile("app-password-test", ".json");
-        String configJson = """
-            {
-              "attributes": [
-                {
-                  "password": "somePassword",
-                  "created": "somePasswordCreatedAt"
-                }
-              ],
-              "length": 24
-            }
-            """;
-        Files.writeString(tempConfig, configJson);
 
-        AppPasswordConfig config = AppPasswordUtils.createConfig(tempConfig.toString());
+        try {
+            String configJson = """
+                    {
+                      "attributes": [
+                        {
+                          "password": "somePassword",
+                          "created": "somePasswordCreatedAt"
+                        }
+                      ],
+                      "length": 24
+                    }
+                    """;
 
-        assertEquals(24, (int) config.length);
-        assertEquals(1, config.attributes.size());
-        assertEquals("somePassword", config.attributes.get(0).password);
-        assertEquals("somePasswordCreatedAt", config.attributes.get(0).created);
+            Files.writeString(tempConfig, configJson);
 
-        Files.deleteIfExists(tempConfig);
+            AppPasswordConfig config =
+                    AppPasswordUtils.createConfig(tempConfig.toString());
+
+            assertEquals(24, config.length);
+            assertEquals(1, config.attributes.size());
+            assertEquals("somePassword", config.attributes.getFirst().password);
+            assertEquals("somePasswordCreatedAt", config.attributes.getFirst().created);
+        } finally {
+            Files.deleteIfExists(tempConfig);
+        }
     }
 
     @Test
-    public void createConfigLoadPartialOverrides() throws IOException {
-        Path tempConfig = Files.createTempFile("app-password-test2", ".json");
-        String configJson = """
-            {
-              "attributes": [
-                {
-                  "password": "somePassword",
-                  "created": "somePasswordCreatedAt"
-                }
-              ]
-            }
-            """;
-        Files.writeString(tempConfig, configJson);
+    void createConfigLoadPartialOverrides() throws IOException {
+        Path tempConfig = Files.createTempFile("app-password-test", ".json");
 
-        AppPasswordConfig config = AppPasswordUtils.createConfig(tempConfig.toString());
+        try {
+            String configJson = """
+                    {
+                      "attributes": [
+                        {
+                          "password": "somePassword",
+                          "created": "somePasswordCreatedAt"
+                        }
+                      ]
+                    }
+                    """;
 
-        assertEquals(32, (int) config.length);
-        assertEquals(1, config.attributes.size());
-        assertEquals("somePassword", config.attributes.get(0).password);
-        assertEquals("somePasswordCreatedAt", config.attributes.get(0).created);
+            Files.writeString(tempConfig, configJson);
 
-        Files.deleteIfExists(tempConfig);
+            AppPasswordConfig config =
+                    AppPasswordUtils.createConfig(tempConfig.toString());
+
+            assertEquals(32, config.length);
+            assertEquals(1, config.attributes.size());
+            assertEquals("somePassword", config.attributes.getFirst().password);
+            assertEquals("somePasswordCreatedAt", config.attributes.getFirst().created);
+        } finally {
+            Files.deleteIfExists(tempConfig);
+        }
     }
 
     @Test
-    public void createConfigLoadPartialOverrides2() throws IOException {
-        Path tempConfig = Files.createTempFile("app-password-test2", ".json");
-        String configJson = """
-            {
-              "length": 34
-            }
-            """;
-        Files.writeString(tempConfig, configJson);
+    void createConfigLoadLengthOnlyOverride() throws IOException {
+        Path tempConfig = Files.createTempFile("app-password-test", ".json");
 
-        AppPasswordConfig config = AppPasswordUtils.createConfig(tempConfig.toString());
+        try {
+            String configJson = """
+                    {
+                      "length": 34
+                    }
+                    """;
 
-        assertEquals(34, (int) config.length);
-        assertEquals(1, config.attributes.size());
-        assertEquals("emailPassword", config.attributes.get(0).password);
-        assertEquals("emailPasswordCreated", config.attributes.get(0).created);
+            Files.writeString(tempConfig, configJson);
 
-        Files.deleteIfExists(tempConfig);
+            AppPasswordConfig config =
+                    AppPasswordUtils.createConfig(tempConfig.toString());
+
+            assertEquals(34, config.length);
+            assertEquals(1, config.attributes.size());
+            assertEquals("emailPassword", config.attributes.getFirst().password);
+            assertEquals("emailPasswordCreated", config.attributes.getFirst().created);
+        } finally {
+            Files.deleteIfExists(tempConfig);
+        }
     }
 
     @Test
-    public void getAttributeFindsAttribute() {
-        AppPasswordConfig config = new AppPasswordConfig();
-        config.attributes = List.of(
-                new AppPasswordConfigAttribute("somePassword", "somePasswordCreated")
+    void getAttributeFindsAttribute() {
+        AppPasswordConfig config = configWithAttribute(
+                "somePassword1",
+                "somePasswordCreated1"
         );
 
-        AppPasswordConfigAttribute attribute = AppPasswordUtils.getAttribute(config, "somePassword");
+        AppPasswordConfigAttribute attribute =
+                AppPasswordUtils.getAttribute(config, "somePassword1");
 
         assertNotNull(attribute);
+        assertEquals("somePassword1", attribute.password);
+        assertEquals("somePasswordCreated1", attribute.created);
     }
 
     @Test
-    public void getAttributeDoesNotFindAttribute() {
-        AppPasswordConfig config = new AppPasswordConfig();
-        config.attributes = List.of(
-                new AppPasswordConfigAttribute("somePassword", "somePasswordCreated")
+    void getAttributeReturnsNullWhenMissing() {
+        AppPasswordConfig config = configWithAttribute(
+                "somePassword2",
+                "somePasswordCreated2"
         );
 
-        AppPasswordConfigAttribute attribute = AppPasswordUtils.getAttribute(config, "otherPassword");
+        AppPasswordConfigAttribute attribute =
+                AppPasswordUtils.getAttribute(config, "otherPassword");
 
         assertNull(attribute);
     }
 
     @Test
-    public void hasValidGroupNullGroupsTrue() {
+    void generateSecurePasswordReturnsRequestedLength() {
+        String password = AppPasswordUtils.generateSecurePassword(32);
+
+        assertEquals(32, password.length());
+    }
+
+    @Test
+    void generateSecurePasswordRejectsTooShortPassword() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> AppPasswordUtils.generateSecurePassword(19)
+        );
+
+        assertEquals(
+                "Password length must be at least 20",
+                exception.getMessage()
+        );
+    }
+
+    @Test
+    void generateSecurePasswordContainsRequiredCharacterTypes() {
+        String password = AppPasswordUtils.generateSecurePassword(32);
+
+        long uppercase = password.chars()
+                .filter(Character::isUpperCase)
+                .count();
+
+        long lowercase = password.chars()
+                .filter(Character::isLowerCase)
+                .count();
+
+        long digits = password.chars()
+                .filter(Character::isDigit)
+                .count();
+
+        assertTrue(uppercase >= 2);
+        assertTrue(lowercase >= 2);
+        assertTrue(digits >= 2);
+    }
+
+    @Test
+    void hasValidGroupNullGroupsTrue() {
         AppPasswordConfig config = new AppPasswordConfig();
         config.groups = null;
 
-        Stream<String> userGroups = Stream.of("staff", "admin");
-
-        boolean result = AppPasswordUtils.hasValidGroup(config, userGroups);
+        boolean result = AppPasswordUtils.hasValidGroup(
+                config,
+                Stream.of("staff", "admin")
+        );
 
         assertTrue(result);
     }
 
     @Test
-    public void hasValidGroupEmptyFalse() {
+    void hasValidGroupEmptyFalse() {
         AppPasswordConfig config = new AppPasswordConfig();
         config.groups = Collections.emptyList();
 
-        Stream<String> userGroups = Stream.of("staff", "admin");
-
-        boolean result = AppPasswordUtils.hasValidGroup(config, userGroups);
+        boolean result = AppPasswordUtils.hasValidGroup(
+                config,
+                Stream.of("staff", "admin")
+        );
 
         assertFalse(result);
     }
 
     @Test
-    public void hasValidGroupNonMatchingFalse() {
+    void hasValidGroupNonMatchingFalse() {
         AppPasswordConfig config = new AppPasswordConfig();
         config.groups = List.of("marketing");
 
-        Stream<String> userGroups = Stream.of("staff", "admin");
-
-        boolean result = AppPasswordUtils.hasValidGroup(config, userGroups);
+        boolean result = AppPasswordUtils.hasValidGroup(
+                config,
+                Stream.of("staff", "admin")
+        );
 
         assertFalse(result);
     }
 
     @Test
-    public void hasValidGroupMatchingTrue() {
+    void hasValidGroupMatchingTrue() {
         AppPasswordConfig config = new AppPasswordConfig();
         config.groups = List.of("staff");
 
-        Stream<String> userGroups = Stream.of("staff", "admin");
-
-        boolean result = AppPasswordUtils.hasValidGroup(config, userGroups);
+        boolean result = AppPasswordUtils.hasValidGroup(
+                config,
+                Stream.of("staff", "admin")
+        );
 
         assertTrue(result);
+    }
+
+    @Test
+    void requireAttributeReturnsAttribute() {
+        AppPasswordConfig config = new AppPasswordConfig();
+        config.attributes = List.of(
+                new AppPasswordConfigAttribute("somePassword", "somePasswordCreated")
+        );
+
+        EventBuilder event = mock(EventBuilder.class);
+
+        AppPasswordConfigAttribute attribute =
+                AppPasswordUtils.requireAttribute(
+                        config,
+                        "somePassword",
+                        event
+                );
+
+        assertEquals("somePassword", attribute.password);
+        verifyNoInteractions(event);
+    }
+
+    private static AppPasswordConfig configWithAttribute(
+            String password,
+            String created
+    ) {
+        AppPasswordConfig config = new AppPasswordConfig();
+        config.attributes = List.of(
+                new AppPasswordConfigAttribute(password, created)
+        );
+        return config;
     }
 }
