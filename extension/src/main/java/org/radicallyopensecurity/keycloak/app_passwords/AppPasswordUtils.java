@@ -1,16 +1,17 @@
 package org.radicallyopensecurity.keycloak.app_passwords;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+import org.keycloak.events.EventBuilder;
 import org.keycloak.models.*;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.Auth;
 import org.keycloak.services.managers.AuthenticationManager;
-import org.passay.CharacterRule;
-import org.passay.EnglishCharacterData;
-import org.passay.PasswordGenerator;
+import org.passay.data.EnglishCharacterData;
+import org.passay.generate.PasswordGenerator;
+import org.passay.rule.CharacterRule;
 import org.radicallyopensecurity.keycloak.app_passwords.config.AppPasswordConfig;
 import org.radicallyopensecurity.keycloak.app_passwords.config.AppPasswordConfigAttribute;
 
@@ -22,15 +23,13 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class AppPasswordUtils {
-    private static final PasswordGenerator Generator = new PasswordGenerator();
     private static final List<CharacterRule> PasswordRules = List.of(
             new CharacterRule(EnglishCharacterData.UpperCase, 2),
             new CharacterRule(EnglishCharacterData.LowerCase, 2),
-            new CharacterRule(EnglishCharacterData.Digit, 2),
-            new CharacterRule(EnglishCharacterData.SpecialAscii, 2));
+            new CharacterRule(EnglishCharacterData.Digit, 2));
 
     /**
-     * Create the extension config by parsing the config json
+     * Create the extension config by parsing the config JSON
      * Otherwise use default values
      * @param path Path to extension config
      * @return Extension config overridden by path as required
@@ -72,7 +71,9 @@ public class AppPasswordUtils {
         if (length < 20) {
             throw new IllegalArgumentException("Password length must be at least 20");
         }
-        return AppPasswordUtils.Generator.generatePassword(length, PasswordRules);
+
+        PasswordGenerator generator = new PasswordGenerator(length, AppPasswordUtils.PasswordRules);
+        return generator.generate().toString();
     }
 
     /**
@@ -81,86 +82,60 @@ public class AppPasswordUtils {
      * @return User making the request
      * @throws WebApplicationException If unauthorized
      */
-    static Auth validateAuth(KeycloakSession session) {
-        boolean hasCookie = false;
-
-        AppAuthManager.BearerTokenAuthenticator bearerAuthenticator = new AppAuthManager.BearerTokenAuthenticator(session);
-        AuthenticationManager.AuthResult authResult = bearerAuthenticator
-                .setConnection(session.getContext().getConnection())
-                .setHeaders(session.getContext().getRequestHeaders())
+    static Auth requireAuth(KeycloakSession session) {
+        AuthenticationManager.AuthResult authResult = new AppAuthManager.BearerTokenAuthenticator(session)
                 .authenticate();
 
         if (authResult == null) {
-            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
+            throw new NotAuthorizedException("Bearer");
         }
 
         RealmModel realm = session.getContext().getRealm();
         ClientModel client = realm.getClientByClientId(Constants.ACCOUNT_MANAGEMENT_CLIENT_ID);
-        Auth auth = new Auth(
-                session.getContext().getRealm(),
-                authResult.getToken(),
-                authResult.getUser(),
+
+        return new Auth(
+                realm,
+                authResult.token(),
+                authResult.user(),
                 client,
-                authResult.getSession(),
-                hasCookie);
-
-        if (auth == null) {
-            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Invalid Token")
-                    .type(MediaType.TEXT_PLAIN)  // or MediaType.APPLICATION_JSON if you prefer
-                    .build());
-        }
-
-        return auth;
+                authResult.session(),
+                false);
     }
 
     /**
      * Parse request and extract which attribute is requested
      * @param config The extension config
      * @param attributeName The attribute name
-     * @return extracted attribute
-     * @throws WebApplicationException If request invalid
+     * @return Extracted attribute
      */
-    static AppPasswordConfigAttribute validateAttribute(AppPasswordConfig config, String attributeName) {
-        if (attributeName == null) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Missing attribute name")
-                    .type(MediaType.TEXT_PLAIN)  // or MediaType.APPLICATION_JSON if you prefer
-                    .build());
-        }
-
-        if (attributeName == null) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Missing 'name' field in request")
-                    .type(MediaType.TEXT_PLAIN)  // or MediaType.APPLICATION_JSON if you prefer
-                    .build());
-        }
-
-        AppPasswordConfigAttribute attribute = getAttribute(config, attributeName);
-
-        if (attribute == null) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Invalid attribute")
-                    .type(MediaType.TEXT_PLAIN)  // or MediaType.APPLICATION_JSON if you prefer
-                    .build());
-        }
-
-        return attribute;
-    }
-
-    /**
-     * Get attribute by name
-     * @param config Config
-     * @param attributeName Name
-     * @return Attribute from config
-     */
-    public static AppPasswordConfigAttribute getAttribute(AppPasswordConfig config, String attributeName) {
-        AppPasswordConfigAttribute attribute = config
+    static AppPasswordConfigAttribute getAttribute(AppPasswordConfig config, String attributeName) {
+        return config
                 .attributes
                 .stream()
                 .filter(item -> item.password.equals(attributeName))
                 .findFirst()
                 .orElse(null);
+    }
+
+    /**
+     * Require an attribute to be present
+     * @param config The extension config
+     * @param attributeName The attribute name
+     * @return Extracted attribute
+     * @throws WebApplicationException If request invalid
+     */
+    static AppPasswordConfigAttribute requireAttribute(
+            AppPasswordConfig config,
+            String attributeName,
+            EventBuilder event
+    ) {
+        AppPasswordConfigAttribute attribute = getAttribute(config, attributeName);
+
+        if (attribute == null) {
+            event.error("Not Found");
+            throw new NotFoundException();
+        }
+
         return attribute;
     }
 

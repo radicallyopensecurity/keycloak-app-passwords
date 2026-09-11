@@ -3,15 +3,14 @@ package org.radicallyopensecurity.keycloak.app_passwords;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.password4j.Argon2Function;
 import com.password4j.Password;
 import com.password4j.types.Argon2;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.ext.Provider;
-import org.jboss.logging.Logger;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -29,10 +28,9 @@ import org.radicallyopensecurity.keycloak.app_passwords.dtos.*;
 
 @Provider
 public class AppPasswordRestResource {
-    private static final Logger log = Logger.getLogger(AppPasswordRestResource.class);
     private final KeycloakSession session;
     private final AppPasswordConfig config;
-    private static final Argon2Function hashFunction = Argon2Function.getInstance(
+    private static final Argon2Function HASH_FUNCTION = Argon2Function.getInstance(
             65536,
             5,
             1,
@@ -63,7 +61,6 @@ public class AppPasswordRestResource {
      */
     @OPTIONS
     @Path("")
-    @Produces(MediaType.APPLICATION_JSON)
     public Response optionsRoot() {
         return Cors
                 .builder()
@@ -82,34 +79,39 @@ public class AppPasswordRestResource {
     @Path("")
     @Produces(MediaType.APPLICATION_JSON)
     public Response list() {
-        Auth auth = AppPasswordUtils.validateAuth(session);
+        Auth auth = AppPasswordUtils.requireAuth(session);
+
+        Cors cors = Cors.builder()
+                .checkAllowedOrigins(auth.getToken())
+                .auth();
+
         UserModel user = auth.getUser();
-        Stream<String> userGroups = user.getGroupsStream().map(GroupModel::getName);
+        Stream<String> userGroups =
+                user.getGroupsStream().map(GroupModel::getName);
+        KeycloakContext context = session.getContext();
+
+        EventBuilder event = new EventBuilder(context.getRealm(), session)
+                .event(EventType.CUSTOM_REQUIRED_ACTION)
+                .detail("operation", "keycloak-app-passwords_list")
+                .user(user.getId())
+                .ipAddress(context.getConnection().getRemoteAddr())
+                .client(auth.getClient());
 
         if (!AppPasswordUtils.hasValidGroup(config, userGroups)) {
-            KeycloakContext context = session.getContext();
-            new EventBuilder(session.getContext().getRealm(), session)
-                    .event(EventType.CUSTOM_REQUIRED_ACTION)
-                    .detail("Endpoint", "List App Passwords")
-                    .user(user.getId())
-                    .ipAddress(context.getConnection().getRemoteAddr())
-                    .client(auth.getClient())
-                    .error("Unauthorized");
-            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
+            event.error("Forbidden");
+            throw new ForbiddenException();
         }
 
-        List<AppPasswordListResponseDto> result = config.attributes.stream()
-                .map(item -> {
-                    String created = user.getFirstAttribute(item.created);
-                    return new AppPasswordListResponseDto(item.password, created);
-                })
-                .collect(Collectors.toList());
 
-        return Cors
-                .builder()
-                .checkAllowedOrigins(auth.getToken())
-                .allowedMethods("GET")
-                .add(Response.ok(result));
+        List<AppPasswordListResponseDto> result = config.attributes.stream()
+                .map(item -> new AppPasswordListResponseDto(
+                        item.password,
+                        user.getFirstAttribute(item.created)
+                ))
+                .toList();
+
+        event.success();
+        return cors.add(Response.ok(result));
     }
 
     /**
@@ -123,30 +125,40 @@ public class AppPasswordRestResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response generate(AppPasswordRequestDto request) {
-        Auth auth = AppPasswordUtils.validateAuth(session);
-        AppPasswordConfigAttribute attribute = AppPasswordUtils.validateAttribute(config, request.name);
+        Auth auth = AppPasswordUtils.requireAuth(session);
+        AppPasswordValidator.validate(request);
+
+        Cors cors = Cors.builder()
+                .checkAllowedOrigins(auth.getToken())
+                .auth();
 
         UserModel user = auth.getUser();
-        Stream<String> userGroups = user.getGroupsStream().map(GroupModel::getName);
+        Stream<String> userGroups =
+                user.getGroupsStream().map(GroupModel::getName);
 
         KeycloakContext context = session.getContext();
+
         EventBuilder event = new EventBuilder(context.getRealm(), session)
                 .event(EventType.UPDATE_PROFILE)
+                .detail("operation", "app-password-generate")
+                .detail("attribute", request.name)
                 .ipAddress(context.getConnection().getRemoteAddr())
                 .client(auth.getClient())
                 .user(user.getId());
 
         if (!AppPasswordUtils.hasValidGroup(config, userGroups)) {
-            event.detail(attribute.password, "SECRET")
-                    .detail(attribute.created, "EMPTY").error("Unauthorized");
-            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
+            event.error("Forbidden");
+            throw new ForbiddenException();
         }
 
-        String plainText = AppPasswordUtils.generateSecurePassword(config.length);
-        String hashed = Password
-                .hash(plainText)
+        AppPasswordConfigAttribute attribute = AppPasswordUtils.requireAttribute(config, request.name, event);
+
+        String plainText =
+                AppPasswordUtils.generateSecurePassword(config.length);
+
+        String hashed = Password.hash(plainText)
                 .addRandomSalt()
-                .with(hashFunction)
+                .with(HASH_FUNCTION)
                 .getResult();
 
         String now = OffsetDateTime.now(ZoneOffset.UTC).toString();
@@ -154,19 +166,15 @@ public class AppPasswordRestResource {
         user.setSingleAttribute(attribute.password, hashed);
         user.setSingleAttribute(attribute.created, now);
 
-        AppPasswordGenerateResponseDto result = new AppPasswordGenerateResponseDto(
-                attribute.password,
-                plainText,
-                now
-        );
+        AppPasswordGenerateResponseDto result =
+                new AppPasswordGenerateResponseDto(
+                        attribute.password,
+                        plainText,
+                        now
+                );
 
-        event.detail(attribute.password, "SECRET")
-                .detail(attribute.created, now).success();
-        return Cors
-                .builder()
-                .checkAllowedOrigins(auth.getToken())
-                .allowedMethods("POST")
-                .add(Response.ok(result));
+        event.success();
+        return cors.add(Response.ok(result));
     }
 
     /**
@@ -180,12 +188,19 @@ public class AppPasswordRestResource {
     @Path("")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response delete(AppPasswordRequestDto request) {
-        Auth auth = AppPasswordUtils.validateAuth(session);
-        AppPasswordConfigAttribute attribute = AppPasswordUtils.validateAttribute(config, request.name);
-        UserModel user = auth.getUser();
+        Auth auth = AppPasswordUtils.requireAuth(session);
+        AppPasswordValidator.validate(request);
 
+        Cors cors = Cors.builder()
+                .checkAllowedOrigins(auth.getToken())
+                .auth();
+
+        UserModel user = auth.getUser();
         KeycloakContext context = session.getContext();
-        EventBuilder event = new EventBuilder(session.getContext().getRealm(), session).event(EventType.UPDATE_PROFILE)
+        EventBuilder event = new EventBuilder(session.getContext().getRealm(), session)
+                .event(EventType.REMOVE_CREDENTIAL)
+                .detail("operation", "app-password-delete")
+                .detail("attribute", request.name)
                 .user(user.getId())
                 .ipAddress(context.getConnection().getRemoteAddr())
                 .client(auth.getClient());
@@ -193,22 +208,18 @@ public class AppPasswordRestResource {
         Stream<String> userGroups = user.getGroupsStream().map(GroupModel::getName);
 
         if (!AppPasswordUtils.hasValidGroup(config, userGroups)) {
-            event.detail(attribute.password, "UNKNOWN")
-                    .detail(attribute.created, "UNKNOWN").error("Unauthorized");
-            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
-
+            event.error("Forbidden");
+            throw new ForbiddenException();
         }
+
+        AppPasswordConfigAttribute attribute = AppPasswordUtils.requireAttribute(config, request.name, event);
 
         user.removeAttribute(attribute.password);
         user.removeAttribute(attribute.created);
 
-        event.detail(attribute.password, "DELETED")
-                .detail(attribute.created, "DELETED").success();
-        return Cors
-                .builder()
-                .checkAllowedOrigins(auth.getToken())
-                .allowedMethods("DELETE")
-                .add(Response.noContent());
+        event.success();
+
+        return cors.add(Response.noContent());
     }
 
     /**
@@ -218,7 +229,6 @@ public class AppPasswordRestResource {
      */
     @OPTIONS
     @Path("/check")
-    @Produces(MediaType.APPLICATION_JSON)
     public Response optionsCheck() {
         return Cors
                 .builder()
@@ -238,36 +248,38 @@ public class AppPasswordRestResource {
     @Path("/check")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response check(AppPasswordCheckPasswordRequestDto request) {
-        Auth auth = AppPasswordUtils.validateAuth(session);
-        AppPasswordUtils.validateAttribute(config, request.name);
+        Auth auth = AppPasswordUtils.requireAuth(session);
+        AppPasswordValidator.validate(request);
+
+        Cors cors = Cors.builder()
+                .checkAllowedOrigins(auth.getToken())
+                .auth();
+
         UserModel user = auth.getUser();
         Stream<String> userGroups = user.getGroupsStream().map(GroupModel::getName);
 
         KeycloakContext context = session.getContext();
+
         EventBuilder event = new EventBuilder(session.getContext().getRealm(), session)
                 .event(EventType.CUSTOM_REQUIRED_ACTION)
-                .detail("Endpoint", "Check App Password")
-                .detail("Attribute", request.name)
+                .detail("operation", "app-password-check")
+                .detail("attribute", request.name)
                 .user(user.getId())
                 .ipAddress(context.getConnection().getRemoteAddr())
                 .client(auth.getClient());
 
         if (!AppPasswordUtils.hasValidGroup(config, userGroups)) {
-            event.error("Unauthorized");
-            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
+            event.error("Forbidden");
+            throw new ForbiddenException();
         }
 
-        String hash = user.getFirstAttribute(request.name);
-        boolean verified = Password.check(request.password, hash).with(hashFunction);
+        AppPasswordConfigAttribute attribute = AppPasswordUtils.requireAttribute(config, request.name, event);
+        String hash = user.getFirstAttribute(attribute.password);
 
-        AppPasswordCheckPasswordResponseDto result = new AppPasswordCheckPasswordResponseDto(verified);
+        boolean verified = hash != null && Password.check(request.password, hash).with(HASH_FUNCTION);
 
-        event.detail("Verified", String.valueOf(verified)).success();
-        return Cors
-                .builder()
-                .checkAllowedOrigins(auth.getToken())
-                .allowedMethods("POST")
-                .add(Response.ok(result));
+        event.detail("verified", Boolean.toString(verified)).success();
+        return cors.add(Response.ok(new AppPasswordCheckPasswordResponseDto(verified)));
     }
 
     /**
@@ -277,7 +289,6 @@ public class AppPasswordRestResource {
      */
     @OPTIONS
     @Path("/enabled")
-    @Produces(MediaType.APPLICATION_JSON)
     public Response optionsEnabled() {
         return Cors
                 .builder()
@@ -296,17 +307,21 @@ public class AppPasswordRestResource {
     @Path("/enabled")
     @Produces(MediaType.APPLICATION_JSON)
     public Response enabled() {
-        Auth auth = AppPasswordUtils.validateAuth(session);
-        UserModel user = auth.getUser();
-        Stream<String> userGroups = user.getGroupsStream().map(GroupModel::getName);
+        Auth auth = AppPasswordUtils.requireAuth(session);
 
-        boolean isEnabled = AppPasswordUtils.hasValidGroup(config, userGroups);
-        AppPasswordEnabledResponseDto result = new AppPasswordEnabledResponseDto(isEnabled);
-
-        return Cors
-                .builder()
+        Cors cors = Cors.builder()
                 .checkAllowedOrigins(auth.getToken())
-                .allowedMethods("GET")
-                .add(Response.ok(result));
+                .auth();
+
+        UserModel user = auth.getUser();
+
+        boolean enabled = AppPasswordUtils.hasValidGroup(
+                config,
+                user.getGroupsStream().map(GroupModel::getName)
+        );
+
+        return cors.add(
+                Response.ok(new AppPasswordEnabledResponseDto(enabled))
+        );
     }
 }
