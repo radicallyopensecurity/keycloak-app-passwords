@@ -2,6 +2,8 @@
 
 cd extension
 
+make init-data
+
 docker compose up -d openldap
 
 echo "Waiting for LDAP to be ready..."
