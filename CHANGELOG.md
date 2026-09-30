@@ -1,3 +1,17 @@
+## 1.2.0 (2026-09-30)
+
+### Feat
+
+- upgrade packages and implement integration tests
+
+### Fix
+
+- **theme**: remove -theme prefix
+- **theme**: copy real password on input click
+- **theme**: bump packages
+- **extension**: fix cors breaking change
+- **theme**: remove delete button
+
 ## 1.1.10 (2025-09-24)
 
 ### Fix
