@@ -10,7 +10,7 @@
     <version>1.2.0</version>
 
     <properties>
-        <keycloak.version>26.7.3</keycloak.version>
+        <keycloak.version>26.8.0</keycloak.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
